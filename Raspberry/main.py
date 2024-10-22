@@ -1,8 +1,8 @@
+#索引值0:封面 1主畫面 2解題 3讀書會 4英文
 import sys
-from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QPushButton, QStackedWidget, QWidget
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QPushButton, QStackedWidget, QWidget,QLineEdit,QVBoxLayout,QHBoxLayout
+from PyQt5.QtGui import QPixmap,QPalette, QColor
 from PyQt5.QtCore import Qt, QRect
-
 # 自訂第三頁的視窗
 class CustomPage(QWidget):
     def __init__(self, parent=None):
@@ -22,7 +22,7 @@ class CustomPage(QWidget):
 
         # 創建返回按鈕
         self.back_button = QPushButton('', self)
-        self.back_button.setGeometry(0, 0, 150, 100)
+        self.back_button.setGeometry(0, 0, 120, 80)
         self.back_button.setStyleSheet('background-color: transparent; font-size: 18px;')
 
     def set_background_image(self, image_path):
@@ -72,7 +72,66 @@ class CustomPage(QWidget):
     def on_button_click(self, button_name):
         print(f"{button_name} 按鈕被點擊！")
 
+class EnglishPage(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
+        # 設定佈局
+        self.setWindowTitle('English Practice')
+        self.setGeometry(100, 100, 1024, 768)
+
+         # 加載背景圖片
+        self.background_label = QLabel(self)
+        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.set_background_image('image/5.jpg')  # Adjust the path based on where the file is saved
+        #創建輸入框
+        self.input_field = QLineEdit(self)
+        self.input_field.setGeometry( 200,500 , 100, 200)
+        self.input_field.setStyleSheet("""
+            background-color: rgba(255, 255, 255, 0);  /* 設置完全透明 */
+            border: none;  /* 移除邊框 */
+            color: black;  /* 設置文字顏色 */
+            font-size: 24px;
+            padding: 10px;
+        """)
+        # 創建透明撥放按鈕
+        self.play_button = QPushButton('', self)
+        self.input_field.setPlaceholderText("輸入英文")
+        self.play_button.setGeometry(400,400, 80, 80)  # Adjust the size and position
+        self.play_button.setStyleSheet('background-color: transparent; border: none;')
+        self.play_button.clicked.connect(self.play_audio)
+
+    def set_background_image(self, image_path):
+        # 加載圖片並設置為背景
+        background_image = QPixmap(image_path)
+        if background_image.isNull():
+            print(f"圖片加載失敗：{image_path}")
+        else:
+            self.background_label.setPixmap(background_image)
+            self.background_label.setScaledContents(True)
+
+    def resizeEvent(self, event):
+         # 在窗口調整大小時，重新調整背景圖片大小
+        width = self.width()
+        height = self.height()
+        print(width,height)
+        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.input_field.setGeometry(150,280 , 100, 200)
+        self.play_button.setGeometry(810,670, 80, 80)
+        self.play_button.setStyleSheet('background-color: transparent; border: none;')
+        self.input_field.setStyleSheet("""
+            background-color: rgba(255, 255, 255, 0);  /* 設置完全透明 */
+            border: none;  /* 移除邊框 */
+            color: black;  /* 設置文字顏色 */
+            font-size: 24px;
+            padding: 10px;
+        """)
+
+    def play_audio(self):
+         # 撥放音頻的功能（目前是占位符）
+        print(f"Playing audio for text: {self.input_field.text()}")
+
+ 
 # 主視窗類別
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -96,6 +155,7 @@ class MainWindow(QMainWindow):
         self.page2.setPixmap(pixmap2)
         self.page2.setScaledContents(True)
         self.stacked_widget.addWidget(self.page2)
+
 
         # 創建並添加按鈕至第二頁
         width = 1920
@@ -128,17 +188,55 @@ class MainWindow(QMainWindow):
         self.page3.back_button.clicked.connect(self.goBackToSecondPage)  # 將返回按鈕連接到返回第二頁
         self.stacked_widget.addWidget(self.page3)
 
+        # 第四頁（讀書會與聊聊）
+        self.page4 = QLabel(self)
+        pixmap4 = QPixmap('image/7.jpg')  # 替換為第五頁的背景圖片
+        self.page4.setPixmap(pixmap4)
+        self.page4.setScaledContents(True)
+        self.stacked_widget.addWidget(self.page4)
+
+        # 添加第四頁的按鈕
+        self.add_buttons_to_page4()
+
+        #第五頁 (英文練習頁面)
+        self.page5 = EnglishPage(self)  # 使用新建的 EnglishPage 類別
+        self.stacked_widget.addWidget(self.page5)
+
         # 頁面間的切換
         self.page1.mousePressEvent = self.changePage
+
+    def add_buttons_to_page4(self):
+        # 第四頁的按鈕
+        width = 1920
+        height = 1080
+        button_width = width*0.234
+        button_height = height*0.231
+
+        self.button_chat = QPushButton('', self.page4)
+        self.button_chat.setGeometry(int(width*0.6), int(height*0.509), int(button_width), int(button_height))  # 讀書會按鈕右側
+        self.button_chat.setStyleSheet('background-color: transparent;')
+
+        self.button_study_club = QPushButton('', self.page4)
+        self.button_study_club.setGeometry(int(width*0.156), int(height*0.509), int(button_width), int(button_height))  # 左側按鈕
+        self.button_study_club.setStyleSheet('background-color: transparent;')
+
+        # 第四頁的返回按鈕
+        self.page4_back_btn = QPushButton('', self.page4)
+        self.page4_back_btn.setGeometry(0, 0, int(width*0.06), int(height*0.074))
+        self.page4_back_btn.setStyleSheet('background-color: transparent;')
+        self.page4_back_btn.clicked.connect(self.goBackToSecondPage)
 
     def changePage(self, event):
         self.stacked_widget.setCurrentIndex(1)
 
     def showPage(self, button_id):
         if button_id == 1:
-            self.stacked_widget.setCurrentIndex(2)  # 自訂頁面
-        # 可在這裡擴充其他按鈕的頁面切換邏輯
-
+            self.stacked_widget.setCurrentIndex(2)
+        elif button_id == 5:
+            self.stacked_widget.setCurrentIndex(3)
+        elif button_id == 3:
+            self.stacked_widget.setCurrentIndex(4)   # 自訂頁面
+            
     def goBackToFirstPage(self):
         self.stacked_widget.setCurrentIndex(0)
 
