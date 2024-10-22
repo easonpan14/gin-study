@@ -13,18 +13,18 @@
 ## 使用者相關 Tables
 ### User
 
-| uID  | name |
-| :--:|:--:|
-| 0     | 小明     |
-| 1     | 小王     |
-| 2     | 小美     |
-| 3     | 明父     |
-| 4     | 王父     |
-| 5     | 美父     |
-| 6     | 明母     |
-| 7     | 王母     |
-| 8     | 美母     |
-| 9     | 老師A     |
+| uID | name   |account number | password    |
+|:---:|:------:|:-------------:|:-----------:|
+| 0   | 小明   |  Xiao_Ming    |   whM28Krc  |
+| 1   | 小王   |  Xiao_Wang    |   3b9wN3T9  |
+| 2   | 小美   |  Xiao_Mei     |  N5nZcSqZ   |
+| 3   | 明父   |  Ming_Father  |   2BhPDT2p  |
+| 4   | 王父   |  Prince_Father|  PHH4WhQ8   |
+| 5   | 美父   |  Meifu_Father |   KUQDwArp  |
+| 6   | 明母   |  Ming_Mother  |   85b576Fk  |
+| 7   | 王母   |  Queen_Mother |   Q2pxD3E2  |
+| 8   | 美母   |  Mei_Mothe    |  9RY7kBy4   |
+| 9   | 老師A  |  Teacher_A    |  E3r3Cd85   |
 
 ### Parent_Child_Relation
 
