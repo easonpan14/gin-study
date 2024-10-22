@@ -5,6 +5,10 @@
 4.在資料夾中開啟終端機 輸入: git clone https://github.com/Ryan7988/gin-study
 5.在本地git上登入github帳號見<附件>
 
+請先在gin-study資料夾加入名為.gitignore的檔案
+可在檔案中以行為單位輸入不須上傳的檔案
+ex. .gitignore #(檔案自身不上傳)#符號為註解
+*.png   #表示所有副檔名為.png的檔案
 
 二、嘗試更新專案 
 1.在先前建立的資料夾中，會出現gin-stud資料夾
