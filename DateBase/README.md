@@ -13,7 +13,7 @@
 ## 使用者相關 Tables
 ### User
 
-| uID | name   |account number | password    |
+| uID | name   |   account     | password    |
 |:---:|:------:|:-------------:|:-----------:|
 | 0   | 小明   |  Xiao_Ming    |   whM28Krc  |
 | 1   | 小王   |  Xiao_Wang    |   3b9wN3T9  |
