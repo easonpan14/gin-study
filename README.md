@@ -1,15 +1,30 @@
-1.請先下載git https://git-scm.com/downloads
-2.開啟一個資料夾存放專案
-3.在資料夾中開啟終端機 輸入: git clone https://github.com/Ryan7988/gin-study
-4.在gin-stud資料夾開啟終端
+一、拉取專案
+1.請先申請github帳號並，向吳承恩要求本庫的權限
+2.下載git並登入github帳號 https://git-scm.com/downloads
+3.開啟一個資料夾存放專案
+4.在資料夾中開啟終端機 輸入: git clone https://github.com/Ryan7988/gin-study
+5.在本地git上登入github帳號見<附件>
+
+
+二、嘗試更新專案 
+1.在先前建立的資料夾中，會出現gin-stud資料夾
+2.再names.txt輸入自己的名字嘗試更新專案
+3.在git-stud開啟終端
+4.如果有新增檔案，輸入:git add .
+5.提交內容輸入:git commit -m "更新訊息的簡要內容"
+6.最後合併上傳雲端輸入:git push
+6.1.如果失敗，可能是有人更新過了，請先仔入最新內容後再嘗試輸入:git pull --rebase
 
 
 
 
+
+
+
+<附件>
+登入github帳號教學
 如果遇到：「致命錯誤: 需要指定如何調和偏離的分支。」
-
 這個錯誤是因為 GitHub 在 2021 年 8 月 13 日移除了對密碼進行身份驗證的支持，現在需要使用令牌（token）來進行身份驗證。這裡介紹如何使用 Personal Access Token (PAT) 來替代密碼。
-
 解決步驟：
 1. 生成 GitHub Personal Access Token (PAT)
 
