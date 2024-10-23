@@ -226,7 +226,7 @@ def send_group_message(group_ID, message, uID):
     finally:
         connection.close()  # 關閉資料庫連接
 
-# 10.家長發送建立關係的請求 
+# 10.發送建立關係的請求 
 def send_family_request(parent_ID, child_ID):
     connection = connect_db()
     try:
@@ -279,7 +279,7 @@ def select_family_request(uID):
 
 
 
-# 11.孩子同意請求 
+# 11.同意請求 
 def agree_family_request(parent_uID, child_uID, agree):
     connection = connect_db()
     try:
