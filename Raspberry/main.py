@@ -3,6 +3,42 @@ import sys
 from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QPushButton, QStackedWidget, QWidget,QLineEdit,QVBoxLayout,QHBoxLayout
 from PyQt5.QtGui import QPixmap,QPalette, QColor
 from PyQt5.QtCore import Qt, QRect
+
+class ProblemSolvingPage(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle('國文解題')
+
+        # 設定佈局
+        layout = QVBoxLayout()
+
+        # 創建顯示解答區域
+        self.answer_label = QLabel("解答會顯示在這裡", self)
+        self.answer_label.setStyleSheet('font-size: 18px; color: black;')
+        layout.addWidget(self.answer_label)
+
+        # 創建輸入框
+        self.input_field = QLineEdit(self)
+        self.input_field.setPlaceholderText("請輸入國文問題")
+        self.input_field.setStyleSheet('font-size: 18px; padding: 10px;')
+        layout.addWidget(self.input_field)
+
+        # 創建模擬 GPT 回答的按鈕
+        self.solve_button = QPushButton('解題', self)
+        self.solve_button.setStyleSheet('font-size: 18px; padding: 10px;')
+        self.solve_button.clicked.connect(self.solve_problem)
+        layout.addWidget(self.solve_button)
+
+        self.setLayout(layout)
+
+    def solve_problem(self):
+        # 模擬 GPT 回應
+        question = self.input_field.text()
+        if question:
+            self.answer_label.setText(f"這是對於「{question}」的解答。")
+        else:
+            self.answer_label.setText("請輸入一個問題。")
+
 # 自訂第三頁的視窗
 class CustomPage(QWidget):
     def __init__(self, parent=None):
@@ -71,6 +107,7 @@ class CustomPage(QWidget):
 
     def on_button_click(self, button_name):
         print(f"{button_name} 按鈕被點擊！")
+
 
 class EnglishPage(QWidget):
     def __init__(self, parent=None):
@@ -190,7 +227,7 @@ class MainWindow(QMainWindow):
 
         # 第四頁（讀書會與聊聊）
         self.page4 = QLabel(self)
-        pixmap4 = QPixmap('image/7.jpg')  # 替換為第五頁的背景圖片
+        pixmap4 = QPixmap('image/7.jpg')  #
         self.page4.setPixmap(pixmap4)
         self.page4.setScaledContents(True)
         self.stacked_widget.addWidget(self.page4)
@@ -202,8 +239,14 @@ class MainWindow(QMainWindow):
         self.page5 = EnglishPage(self)  # 使用新建的 EnglishPage 類別
         self.stacked_widget.addWidget(self.page5)
 
+        self.problem_solving_page = ProblemSolvingPage(self)
+        self.stacked_widget.addWidget(self.problem_solving_page)
+        self.page3.button1.clicked.connect(self.showProblemSolvingPage)
         # 頁面間的切換
         self.page1.mousePressEvent = self.changePage
+
+    def showProblemSolvingPage(self):
+        self.stacked_widget.setCurrentWidget(self.problem_solving_page)
 
     def add_buttons_to_page4(self):
         # 第四頁的按鈕
