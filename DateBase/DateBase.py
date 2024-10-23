@@ -45,20 +45,29 @@ def login_check(account, password):
     finally:
         connection.close()
 
-# 1. 註冊檢查，返回 User 類，如果失敗返回 User(0, "")
-def login_check(account, password):
+# 1.1. 註冊並檢查，返回 User 類，如果註冊失敗返回 User(0, "")
+def register_and_login(name, account, password):
     user = User(0, "")
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
-            sql = 'SELECT uID, name FROM User WHERE account = %s AND password = %s'
-            cursor.execute(sql, (account, password))
+            # 先檢查賬號是否已存在
+            sql = 'SELECT uID FROM User WHERE account = %s'
+            cursor.execute(sql, (account,))
             result = cursor.fetchone()
             if result:
-                user = User(result[0], result[1])
-            return user  # 返回用戶信息
+                return User(0, "")  # 如果賬號已存在，返回失敗
+
+            # 插入新用戶數據
+            sql = "INSERT INTO User (name, account, password) VALUES (%s, %s, %s)"
+            cursor.execute(sql, (name, account, password))
+            connection.commit()  # 提交插入操作
+
+            # 插入成功後自動登錄
+            return login_check(account, password)
     finally:
         connection.close()
+
 
 
 
