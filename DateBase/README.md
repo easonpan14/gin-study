@@ -36,13 +36,6 @@ return string
 get_name_by_uid(uID)
 ```
 
-* 根據 uID 查找群組
-
-return list about groupID
-```
-get_groups_by_uid(uID)
-```
-
 * 根據 uID 查找父母,子女 uid
 
 return list about uID
@@ -50,6 +43,47 @@ return list about uID
 get_parents_uid_by_uid(uID)
 get_children_uid_by_uid(uID)
 ```
+* 發送建立關係的請求 
+```
+send_family_request(parent_ID, child_ID)
+```
+* 查詢建立關係的請求 不論父母子女都可查詢
+```
+select_family_request(uID)
+```
+
+* 同意請求 agree==1為同意 否則 不同意 運行後 皆會刪除請求
+def agree_family_request(parent_uID, child_uID, agree):
+
+
+
+
+
+
+* 建立群組 會回傳新群組的 group_ID
+```
+create_group(group_name, uID)
+```
+
+
+* 加入群組
+```
+join_group(group_ID,uID)
+```
+
+* 傳送群組訊息
+```
+send_group_message(group_ID, message, uID)
+```
+
+* 根據 uID 查找群組
+
+return list about groupID
+```
+get_groups_by_uid(uID)
+```
+
+
 
 * 根據 Group_ID 查找成員
 
@@ -65,10 +99,6 @@ return list about class message
 get_messages_by_group_id(group_id)
 ```
 ### 待補充
-建立親子關係
-建立群組
-加入群組
-傳送群組訊息
 
 
 
