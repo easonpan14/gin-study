@@ -3,6 +3,9 @@ import sys
 from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QPushButton, QStackedWidget, QWidget,QLineEdit,QVBoxLayout,QHBoxLayout
 from PyQt5.QtGui import QPixmap,QPalette, QColor
 from PyQt5.QtCore import Qt, QRect
+from openai import OpenAI
+
+
 
 class ProblemSolvingPage(QWidget):
     def __init__(self, parent=None):
@@ -22,7 +25,7 @@ class ProblemSolvingPage(QWidget):
         self.input_field.setPlaceholderText("請輸入國文問題")
         self.input_field.setStyleSheet('font-size: 18px; padding: 10px;')
         layout.addWidget(self.input_field)
-
+        
         # 創建模擬 GPT 回答的按鈕
         self.solve_button = QPushButton('解題', self)
         self.solve_button.setStyleSheet('font-size: 18px; padding: 10px;')
@@ -32,12 +35,19 @@ class ProblemSolvingPage(QWidget):
         self.setLayout(layout)
 
     def solve_problem(self):
-        # 模擬 GPT 回應
+        # 取得輸入的問題
         question = self.input_field.text()
+
         if question:
-            self.answer_label.setText(f"這是對於「{question}」的解答。")
+            # 清空標籤並顯示等待訊息
+            self.answer_label.setText(f"正在為「{question}」生成解答...")
+            
+            # 構造發送給 GPT 的訊息
+            messages = [{'role': 'user', 'content': f'你是個國文老師，幫她解決問題，問題是「{question}」'}]
         else:
             self.answer_label.setText("請輸入一個問題。")
+
+    
 
 # 自訂第三頁的視窗
 class CustomPage(QWidget):
