@@ -8,6 +8,27 @@
 
 # 其他需求設計撰寫處
 * 歡迎補充或提出需求
+* ### Parent_Child_Relation
+
+
+##GPT 相關資料
+### GPT
+| GPT_ID  | GPT_TITLE | uID|
+| :-----:|:-----:|:------|
+| 1      |  考古問題    |   1    |
+| 2      | 數學問題     |    2   |
+| 3      |   我的GPT   |    3   |
+
+### GPT_MESSAGE
+| GPT_MESSAGE_ID  | GPT_ID | message | sender (sender=0 gpt 傳給 user,否則表示 user 傳給 gpt) |
+| :-----:|:-----:|:-----:|:-----:|
+| 1      | 1     |python 的 if 怎麼寫?|1|
+| 2      | 1     | if(條件判斷): /n /t 後續執行條件|0|
+| 3      | 2     |1+1=?|1|
+| 4      | 2     |2|0|
+| 5      | 3    |HI|1|
+| 6      | 3     |你好！有什么我能帮忙的吗？😊|0|
+
 
 
 # 相關 class
