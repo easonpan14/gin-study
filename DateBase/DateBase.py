@@ -1,5 +1,7 @@
 import pymysql
 
+
+################################################    about class    ################################################
 # 數據庫連接配置
 DB_CONFIG = {
     'host': '18.180.122.148',
@@ -26,6 +28,9 @@ class GroupMessage:
         self.uID = uID
 
 
+
+################################################    about function    ################################################
+
 # 連接到數據庫
 def connect_db():
     return pymysql.connect(**DB_CONFIG)
@@ -45,7 +50,7 @@ def login_check(account, password):
     finally:
         connection.close()
 
-# 1.1. 註冊並檢查，返回 User 類，如果註冊失敗返回 User(0, "")
+# 2. 註冊並檢查，返回 User 類，如果註冊失敗返回 User(0, "")
 def register_and_login(name, account, password):
     user = User(0, "")
     connection = connect_db()
@@ -146,7 +151,7 @@ def get_parents_uid_by_uid(uID):
     finally:
         connection.close()
 
-# 6. 根據 uID 查找小孩 uid
+# 6.1 根據 uID 查找小孩 uid
 def get_children_uid_by_uid(uID):
     connection = connect_db()
     try:
@@ -161,6 +166,150 @@ def get_children_uid_by_uid(uID):
             return children  # 返回小孩
     finally:
         connection.close()
+
+# 7. 建立群組，返回 Group_ID，如果失敗返回 -1
+def create_group(group_name, uID):
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            # 插入群组
+            sql = "INSERT INTO `Group` (Group_name) VALUES (%s)"
+            cursor.execute(sql, (group_name,))
+            # 獲得取插入的 Group_ID
+            group_ID = cursor.lastrowid  # 獲得最後插入ID
+            
+            # 將用户加入群組
+            relation_sql = "INSERT INTO Group_Relation (Group_ID, uID) VALUES (%s, %s)"
+            cursor.execute(relation_sql, (group_ID, uID))
+            
+            connection.commit() 
+            return group_ID  # 返回新建的 Group_ID
+    except Exception as e:
+        print(f"Error: {e}")
+        connection.rollback()  # 出错时回滚
+        return -1  # 返回 -1 表示失败
+    finally:
+        connection.close()
+
+# 8. 加入群組
+def join_group(group_ID,uID):
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            #加入群組
+            relation_sql = "INSERT INTO Group_Relation (Group_ID, uID) VALUES (%s, %s)"
+            cursor.execute(relation_sql, (group_ID, uID))
+            connection.commit() 
+            return cursor.fetchall  
+    finally:
+        connection.close()
+
+# 9. 傳送群組訊息，返回訊息class GroupMessag，如果失敗返回 -1
+def send_group_message(group_ID, message, uID):
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            # 插入群組訊息
+            sql = "INSERT INTO Group_message (Message, Group_ID, uID) VALUES (%s, %s, %s)"
+            cursor.execute(sql, (message, group_ID, uID))
+
+            # 取得新訊息的 Group_Message_ID
+            message_id = cursor.lastrowid  
+
+            # 提交變更
+            connection.commit()
+            return GroupMessage(message_id,message,group_ID,uID)
+    except Exception as e:
+        print(f"Error: {e}")
+        connection.rollback()  # 出錯時回滾
+        return -1  # 返回 -1 表示失敗
+    finally:
+        connection.close()  # 關閉資料庫連接
+
+# 10.家長發送建立關係的請求 
+def send_family_request(parent_ID, child_ID):
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+                INSERT INTO family_request (parent_ID, child_ID)
+                VALUES (%s, %s)
+            """
+            cursor.execute(sql, (parent_ID, child_ID))
+            connection.commit()
+            print("請求已成功發送")
+    except Exception as e:
+        print(f"Error: {e}")
+        connection.rollback()
+    finally:
+        connection.close()
+
+#11.查詢建立關係的請求
+def select_family_request(uID):
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            # 查找該用戶作為父母發出的請求
+            sql_parent = """
+                SELECT parent_ID, child_ID 
+                FROM family_request 
+                WHERE parent_ID = %s
+            """
+            cursor.execute(sql_parent, (uID,))
+            sent_requests = cursor.fetchall()
+
+            # 查找該用戶作為孩子收到的請求
+            sql_child = """
+                SELECT parent_ID, child_ID 
+                FROM family_request 
+                WHERE child_ID = %s
+            """
+            cursor.execute(sql_child, (uID,))
+            received_requests = cursor.fetchall()
+
+            return {
+                'sent_requests': sent_requests,     # 該用戶作為父母發出的請求
+                'received_requests': received_requests  # 該用戶作為孩子收到的請求
+            }
+    except Exception as e:
+        print(f"Error: {e}")
+        return None  # 返回空表示查詢失敗
+    finally:
+        connection.close()
+
+
+
+# 11.孩子同意請求 
+def agree_family_request(parent_uID, child_uID, agree):
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            if agree == 1:
+                # 同意请求，插入 ParentChild 表
+                sql_insert = """
+                    INSERT INTO ParentChild (Parent_uID, Child_uID) 
+                    VALUES (%s, %s)
+                """
+                cursor.execute(sql_insert, (parent_uID, child_uID))
+
+            # 刪除 family_request 表中的請求
+            sql_delete = """
+                DELETE FROM family_request 
+                WHERE parent_ID = %s AND child_ID = %s
+            """
+            cursor.execute(sql_delete, (parent_uID, child_uID))
+
+            # 提交更改
+            connection.commit()
+            print(f"處理完成: {'同意' if agree == 1 else '拒絕'}")
+    except Exception as e:
+        print(f"Error: {e}")
+        connection.rollback()  # 遇到错误时回滚事务
+    finally:
+        connection.close()
+
+
+
 
 
 # 示例使用
