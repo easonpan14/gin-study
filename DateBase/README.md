@@ -73,8 +73,9 @@ select_family_request(uID)
 ```
 
 * 同意請求 agree==1為同意 否則 不同意 運行後 皆會刪除請求
-def agree_family_request(parent_uID, child_uID, agree):
-
+```
+agree_family_request(parent_uID, child_uID, agree):
+```
 
 
 
