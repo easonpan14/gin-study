@@ -5,7 +5,11 @@ from PyQt5.QtGui import QPixmap,QPalette, QColor
 from PyQt5.QtCore import Qt, QRect
 from openai import OpenAI
 
-
+client = OpenAI(
+    # defaults to os.environ.get("OPENAI_API_KEY")
+    api_key="sk-uJ3B62eXV4XouZSH7htWKYzf5QFj1W0WQd4AAn072WQPzptn",
+    base_url="https://api.chatanywhere.tech/v1"
+)
 
 class ProblemSolvingPage(QWidget):
     def __init__(self, parent=None):
@@ -34,6 +38,24 @@ class ProblemSolvingPage(QWidget):
 
         self.setLayout(layout)
 
+    def gpt_35_api_stream(self, messages: list):
+        try:
+            stream = client.chat.completions.create(
+                model='gpt-3.5-turbo',
+                messages=messages,
+                stream=True,
+            )
+            
+            full_response = ""
+            for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    full_response  += chunk.choices[0].delta.content
+
+            self.answer_label.setText(full_response )
+
+        except Exception as e:
+            self.answer_label.setText(f"發生錯誤: {e}")
+
     def solve_problem(self):
         # 取得輸入的問題
         question = self.input_field.text()
@@ -43,7 +65,11 @@ class ProblemSolvingPage(QWidget):
             self.answer_label.setText(f"正在為「{question}」生成解答...")
             
             # 構造發送給 GPT 的訊息
-            messages = [{'role': 'user', 'content': f'你是個國文老師，幫她解決問題，問題是「{question}」'}]
+            messages = [{'role': 'user', 'content': f'你是個國文老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            
+            # 調用 GPT API 生成解答
+            self.gpt_35_api_stream(messages)
+
         else:
             self.answer_label.setText("請輸入一個問題。")
 
