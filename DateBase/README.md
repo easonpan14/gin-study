@@ -8,10 +8,9 @@
 
 # 其他需求設計撰寫處
 * 歡迎補充或提出需求
-* ### Parent_Child_Relation
 
 
-##GPT 相關資料
+## GPT 相關資料
 ### GPT
 | GPT_ID  | GPT_TITLE | uID|
 | :-----:|:-----:|:------|
