@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
 </head>
 <body>
+    {% if success %}
+    <script>
+        alert('登入成功！');
+    </script>
+    {% endif %}
     <nav class="navbar">
         <ul>
             <li><a href="{% url 'home' %}">首頁</a></li>
