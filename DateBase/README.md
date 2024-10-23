@@ -1,12 +1,69 @@
 
 # SQL目前構想
 * 使用者相關 Tables
+* 群組相關 Tables
 * 題目相關 Tables
 * other Tables
 
 
 # 其他需求設計撰寫處
 * 歡迎補充或提出需求
+
+
+# 相關 class
+* 注意所有ID <= 0接表示失敗
+### class User
+* uID --唯一識別碼-- 資料庫查找時使用
+* name
+### GroupMessage
+* group_message_ID --訊息的唯一識別碼--大小由舊到新，越新的數字越大
+* message --訊息內容--
+* Group_ID --群組唯一識別碼--表示訊息發到哪個群組
+* uID  --訊息發送源uID--
+
+# 相關 function
+
+* 登入和註冊接回傳 class User uID==0表示失敗
+```
+login_check(account, password)
+register_and_login(name, account, password)
+```
+
+* 根據 uID 查找姓名
+
+return string
+```
+get_name_by_uid(uID)
+```
+
+* 根據 uID 查找群組
+
+return list about groupID
+```
+get_groups_by_uid(uID)
+```
+
+* 根據 uID 查找父母,子女 uid
+
+return list about uID
+```
+get_parents_uid_by_uid(uID)
+get_children_uid_by_uid(uID)
+```
+
+* 根據 Group_ID 查找成員
+
+return list about uID
+```
+get_members_by_group_id(group_id)
+```
+
+* 根據 Group_ID 查找對話記錄
+
+return list about class message
+```
+get_messages_by_group_id(group_id)
+```
 
 
 # 詳細結構
@@ -39,7 +96,7 @@
 | 5      | 2     |
 | 8      | 2     |
 
-
+## 群組相關 Tables
 
 ### Group
 | Group_ID  | Group_name |
