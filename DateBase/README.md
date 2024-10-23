@@ -64,6 +64,12 @@ return list about class message
 ```
 get_messages_by_group_id(group_id)
 ```
+### 待補充
+建立親子關係
+建立群組
+加入群組
+傳送群組訊息
+
 
 
 # 詳細結構
