@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登錄頁面</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <nav class="navbar">
+        <ul>
+            <li><a href="home.html">首頁</a></li>
+            <li><a href="login.html">登入</a></li>
+            <li><a href="analysis.html">錯題本分析</a></li>
+            <li><a href="emo.html">孩子心理狀況</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <div class="image-side">
+            <img src="login.png" alt="登錄圖片"> <!-- 左側顯示上傳的圖片 -->
+        </div>
+        <div class="form-side">
+            <h1 class="main-title">LOGIN</h1> <!-- 使用大字體 -->
+            <h2 class="sub-title">GINSTUDY</h2> <!-- 使用相同格式 -->
+            <form action="#" method="post">
+                <div class="form-group">
+                    <label for="username">用戶名:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">密碼:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">提交</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
