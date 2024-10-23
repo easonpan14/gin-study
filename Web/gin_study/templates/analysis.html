@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>錯題本分析</title>
-    <link rel="stylesheet" href="emo.css"> 
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/analysis.css' %}">
 </head>
 <body>
     <nav class="navbar">
         <ul>
-            <li><a href="home.html">首頁</a></li>
-            <li><a href="login.html">登入</a></li>
-            <li><a href="analysis.html">錯題本分析</a></li>
-            <li><a href="emo.html">孩子心理狀況</a></li>
+            <li><a href="{% url 'home' %}">首頁</a></li>
+            <li><a href="{% url 'login' %}">登入</a></li>
+            <li><a href="{% url 'analysis' %}">錯題本分析</a></li>
+            <li><a href="{% url 'emo' %}">孩子心理狀況</a></li>
         </ul>
     </nav>
     <div class="container">
