@@ -163,11 +163,11 @@ class CustomPage(QWidget):
         self.button4.setGeometry(int(width * 0.425), int(height * 0.61), button_width, button_height)  # 自然
         self.button5.setGeometry(int(width * 0.675), int(height * 0.61), button_width, button_height)  # 社會
 
-        #self.button1.setStyleSheet('background-color: transparent;')
-        #self.button2.setStyleSheet('background-color: transparent;')
-        #self.button3.setStyleSheet('background-color: transparent;')
-        #self.button4.setStyleSheet('background-color: transparent;')
-        #self.button5.setStyleSheet('background-color: transparent;')
+        self.button1.setStyleSheet('background-color: transparent;')
+        self.button2.setStyleSheet('background-color: transparent;')
+        self.button3.setStyleSheet('background-color: transparent;')
+        self.button4.setStyleSheet('background-color: transparent;')
+        self.button5.setStyleSheet('background-color: transparent;')
 
     def create_buttons(self):
         self.button1 = QPushButton(' ', self)
@@ -320,10 +320,18 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.page5)
         self.page5.back_button.clicked.connect(self.goBackToSecondPage)
 
+        self.page6 = QLabel(self)
+        pixmap6 = QPixmap('image/Statistics.jpg')  
+        self.page6.setPixmap(pixmap6)
+        self.page6.setScaledContents(True)
+        self.stacked_widget.addWidget(self.page6)
+        self.add_buttons_to_page6() #添加第四頁按鈕
+        
         #國文解題
         self.problem_solving_page = ProblemSolvingPage(self)
         self.stacked_widget.addWidget(self.problem_solving_page)
         self.page3.button1.clicked.connect(self.showProblemSolvingPage)#點科目的國文時會進入國文解題頁面
+
 
     def showProblemSolvingPage(self):
         self.stacked_widget.setCurrentWidget(self.problem_solving_page)
@@ -353,7 +361,7 @@ class MainWindow(QMainWindow):
             btn.setGeometry(int(button_positions[i][0]), int(button_positions[i][1]), int(button_width), int(button_height))
             
         self.add_buttons_to_page4() #第四頁的按鈕也要調整大小
-
+        self.add_buttons_to_page6()
     
 
     def add_buttons_to_page4(self):
@@ -376,6 +384,25 @@ class MainWindow(QMainWindow):
         self.page4_back_btn.setStyleSheet('background-color: transparent;')
         self.page4_back_btn.clicked.connect(self.goBackToSecondPage)
 
+    def add_buttons_to_page6(self):
+        # 第六頁的按鈕
+        width = self.width()
+        height = self.height()
+        button_width = width*0.234
+        button_height = height*0.231
+
+        self.button_chat = QPushButton('', self.page4)
+        self.button_chat.setGeometry(int(width*0.6), int(height*0.509), int(button_width), int(button_height))  # 讀書會按鈕右側
+        self.button_chat.setStyleSheet('background-color: transparent;')
+
+        self.button_study_club = QPushButton('', self.page4)
+        self.button_study_club.setGeometry(int(width*0.156), int(height*0.509), int(button_width), int(button_height))  # 左側按鈕
+        self.button_study_club.setStyleSheet('background-color: transparent;')
+        # 第六頁的返回按鈕
+        self.page6_back_btn = QPushButton('', self.page6)
+        self.page6_back_btn.setGeometry(0, 0, int(width*0.06), int(height*0.074))
+        self.page6_back_btn.setStyleSheet('background-color: transparent;')
+        self.page6_back_btn.clicked.connect(self.goBackToSecondPage)
     
 
     def showPage(self, button_id):#判斷被點擊的是哪科按鈕
@@ -385,6 +412,8 @@ class MainWindow(QMainWindow):
             self.stacked_widget.setCurrentIndex(3)
         elif button_id == 3:
             self.stacked_widget.setCurrentIndex(4) 
+        elif button_id == 4:
+            self.stacked_widget.setCurrentIndex(5) 
             
     def goBackToFirstPage(self): #返回第一頁
         self.stacked_widget.setCurrentIndex(0)
