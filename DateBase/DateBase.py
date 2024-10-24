@@ -335,7 +335,7 @@ def agree_family_request(parent_uID:int, child_uID:int, agree:int):
         connection.close()
 
 #12 新增GPT問題 day格式:"yyyy-mm-dd"
-def insert_gpt(subject:str, day:str, uID:int):
+def insert_gpt(subject:str, day:str, uID:int)->int:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -343,9 +343,11 @@ def insert_gpt(subject:str, day:str, uID:int):
             cursor.execute(sql, (subject, day, uID))
             connection.commit()
             print("插入成功")
+            return  cursor.lastrowid
     except Exception as e:
         print(f"插入失敗: {e}")
         connection.rollback()
+        return -1
     finally:
         connection.close()
 
