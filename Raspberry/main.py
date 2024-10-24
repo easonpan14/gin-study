@@ -9,12 +9,75 @@ import os
 import playsound
 import pygame
 import io
+import pymysql
+
+# 資料庫連接配置
+DB_CONFIG = {
+    'host': '18.180.122.148',
+    'user': 'admin',
+    'password': 'LCivpNcrALc6YDK',
+    'database': 'my_database',
+    'charset': 'utf8mb4',
+}
+
+# 資料庫連接函數
+def connect_db():
+    try:
+        connection = pymysql.connect(**DB_CONFIG)
+        return connection
+    except pymysql.MySQLError as e:
+        print(f"資料庫連接失敗: {e}")
+        return None
 client = OpenAI(
     # defaults to os.environ.get("OPENAI_API_KEY")
     api_key="sk-uJ3B62eXV4XouZSH7htWKYzf5QFj1W0WQd4AAn072WQPzptn",
     base_url="https://api.chatanywhere.tech/v1"
 )
 
+# 用戶註冊函數
+def register_and_login(name: str, account: str, password: str) -> bool:
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            # 檢查賬號是否已存在
+            sql = 'SELECT uID FROM User WHERE account = %s'
+            cursor.execute(sql, (account,))
+            result = cursor.fetchone()
+            if result:
+                print("註冊失敗，帳號已存在。")
+                return False
+
+            # 插入新用戶數據
+            sql = "INSERT INTO User (name, account, password) VALUES (%s, %s, %s)"
+            cursor.execute(sql, (name, account, password))  # 直接插入明文密碼
+            connection.commit()
+            print("註冊成功！")
+            return True
+    except Exception as e:
+        print(f"註冊失敗: {e}")
+        connection.rollback()
+        return False
+    finally:
+        connection.close()
+
+# 用戶登入檢查函數
+def login_check(account: str, password: str) -> bool:
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            sql = 'SELECT password FROM User WHERE account = %s'
+            cursor.execute(sql, (account,))
+            result = cursor.fetchone()
+            if result and result[0] == password:  # 比對明文密碼
+                print("登入成功！")
+                return True
+            else:
+                print("登入失敗，帳號或密碼錯誤。")
+                return False
+    finally:
+        connection.close()
+        
+        
 
 class ProblemSolvingPage(QWidget):
     def __init__(self, main_window,parent=None):
@@ -445,10 +508,10 @@ class MainWindow(QMainWindow):
 
     # 登入頁面設置
     def createSigninPage(self):
-        self.signin_acount = QLineEdit(self.signin_page)
-        self.signin_acount.setPlaceholderText("請輸入用戶名")
-        self.signin_acount.setGeometry(800, 245, 400, 80) 
-        self.signin_acount.setStyleSheet("background: rgba(255, 255, 255, 0.3); border: none; color:black;font-size: 23px;")
+        self.signin_account = QLineEdit(self.signin_page)
+        self.signin_account.setPlaceholderText("請輸入用戶名")
+        self.signin_account.setGeometry(800, 245, 400, 80) 
+        self.signin_account.setStyleSheet("background: rgba(255, 255, 255, 0.3); border: none; color:black;font-size: 23px;")
 
         self.signin_password = QLineEdit(self.signin_page)
         self.signin_password.setPlaceholderText("請輸入密碼")
@@ -465,28 +528,31 @@ class MainWindow(QMainWindow):
 
         self.signin_button.clicked.connect(self.handleSignin)
 
-    # 處理註冊按鈕點擊事件
+   # 註冊邏輯
     def handleSignup(self):
         username = self.signup_username.text()
+        account = self.signup_account.text()
         password = self.signup_password.text()
-        password_confirm = self.signup_password_confirm.text()
 
-        if password == password_confirm:
-            # 在這裡處理註冊邏輯 (例如將資料保存到數據庫)
-            print(f"註冊成功！用戶名: {username}")
+        # 調用資料庫註冊功能
+        if register_and_login(username, account, password):
+            print("註冊並登入成功")
+            self.stacked_widget.setCurrentIndex(0)  # 回到首頁或進入應用
         else:
-            print("密碼不匹配，請重新輸入。")
+            print("註冊失敗，帳號已存在。")
 
-    # 處理登入按鈕點擊事件
+    # 登入邏輯
     def handleSignin(self):
-        account = self.signin_acount.text()
+        account = self.signin_account.text()
         password = self.signin_password.text()
 
-        # 在這裡處理登入邏輯 (例如驗證用戶名和密碼)
-        if account == "test" and password == "1234":  # 這裡只是示範，你應該連接真實數據庫
-            print("登入成功！")
+        # 調用資料庫登入檢查功能
+        if login_check(account, password):
+            print("登入成功")
+            self.stacked_widget.setCurrentIndex(0)  # 回到首頁或進入應用
         else:
-            print("登入失敗，用戶名或密碼錯誤。")
+            print("登入失敗，帳號或密碼錯誤。")
+
 
     def showPage(self, button_id):
         if button_id == 1:
