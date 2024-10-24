@@ -63,7 +63,7 @@ return list about uID
 get_parents_uid_by_uid(uID)
 get_children_uid_by_uid(uID)
 ```
-* 發送建立關係的請求 
+* 父母發送建立關係的請求 
 ```
 send_family_request(parent_ID, child_ID)
 ```
@@ -72,7 +72,7 @@ send_family_request(parent_ID, child_ID)
 select_family_request(uID)
 ```
 
-* 同意請求 agree==1為同意 否則 不同意 運行後 皆會刪除請求
+* 子女同意請求 agree==1為同意 否則 不同意 運行後 皆會刪除請求
 ```
 agree_family_request(parent_uID, child_uID, agree):
 ```
