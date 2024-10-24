@@ -13,7 +13,7 @@ DB_CONFIG = {
 
 # 用戶類 ID為唯一編號請以ID進行判斷
 class User:
-    def __init__(self, uID, name):
+    def __init__(self, uID:int, name:str):
         self.uID = uID
         self.name = name
 
@@ -21,11 +21,27 @@ class User:
 
 # 群組消息類    消息越晚,group_message_ID越大   uID為發送者 gID為群組
 class GroupMessage:
-    def __init__(self, group_message_ID, message,Group_ID, uID):
+    def __init__(self, group_message_ID:int, message:str,Group_ID:int, uID:int):
         self.gmID = group_message_ID                
         self.message = message
         self.Group_ID=Group_ID
         self.uID = uID
+
+
+class Gpt:
+    def __init__(self, Gpt_ID:int, subject:str,day:str, uID:int):
+        self.Gpt_ID = Gpt_ID                
+        self.subject = subject
+        self.day=day
+        self.uID = uID
+
+
+class GptMessage:
+    def __init__(self, group_message_ID:int, GPT_ID:int,message:str, sender:bool):
+        self.gmID = group_message_ID 
+        self.GPT_ID=GPT_ID               
+        self.message = message
+        self.sender=sender
 
 
 
@@ -33,10 +49,15 @@ class GroupMessage:
 
 # 連接到數據庫
 def connect_db():
-    return pymysql.connect(**DB_CONFIG)
+    try:
+        connection = pymysql.connect(**DB_CONFIG)
+        return connection
+    except pymysql.MySQLError as e:
+        print(f"SQL連線失敗: {e}")
+        return None
 
 # 1. 登錄檢查，返回 User 類，如果失敗返回 User(0, "")
-def login_check(account, password):
+def login_check(account:str, password:str)->User:
     user = User(0, "")
     connection = connect_db()
     try:
@@ -51,7 +72,7 @@ def login_check(account, password):
         connection.close()
 
 # 2. 註冊並檢查，返回 User 類，如果註冊失敗返回 User(0, "")
-def register_and_login(name, account, password):
+def register_and_login(name:str, account:str, password:str)->User:
     user = User(0, "")
     connection = connect_db()
     try:
@@ -78,7 +99,7 @@ def register_and_login(name, account, password):
 
 
 # 2. 根據 uID 查找姓名
-def get_name_by_uid(uID):
+def get_name_by_uid(uID:int)->str:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -89,7 +110,7 @@ def get_name_by_uid(uID):
         connection.close()
 
 # 3. 根據 uID 查找群組，返回關於 list group_IDs about Group_ID
-def get_groups_by_uid(uID):
+def get_groups_by_uid(uID:int)->list[int]:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -104,7 +125,7 @@ def get_groups_by_uid(uID):
         connection.close()
 
 # 4. 根據 Group_ID 查找成員
-def get_members_by_group_id(group_id):
+def get_members_by_group_id(group_id:int)->list[int]:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -119,7 +140,7 @@ def get_members_by_group_id(group_id):
         connection.close()
 
 # 5. 根據 Group_ID 查找對話記錄
-def get_messages_by_group_id(group_id):
+def get_messages_by_group_id(group_id:int)->list[GroupMessage]:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -135,7 +156,7 @@ def get_messages_by_group_id(group_id):
         connection.close()
 
 # 6. 根據 uID 查找父母 uid
-def get_parents_uid_by_uid(uID):
+def get_parents_uid_by_uid(uID:int)->list[int]:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -152,7 +173,7 @@ def get_parents_uid_by_uid(uID):
         connection.close()
 
 # 6.1 根據 uID 查找小孩 uid
-def get_children_uid_by_uid(uID):
+def get_children_uid_by_uid(uID:int)->list[int]:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -168,7 +189,7 @@ def get_children_uid_by_uid(uID):
         connection.close()
 
 # 7. 建立群組，返回 Group_ID，如果失敗返回 -1
-def create_group(group_name, uID):
+def create_group(group_name:str, uID:int)->int:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -192,20 +213,25 @@ def create_group(group_name, uID):
         connection.close()
 
 # 8. 加入群組
-def join_group(group_ID,uID):
+def join_group(group_ID: int, uID: int)->int:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
-            #加入群組
+            # 插入 Group_Relation 表，將用戶加入群組
             relation_sql = "INSERT INTO Group_Relation (Group_ID, uID) VALUES (%s, %s)"
             cursor.execute(relation_sql, (group_ID, uID))
-            connection.commit() 
-            return cursor.fetchall  
+            connection.commit()  # 提交更改
+            
+            return 1  # 加入成功
+    except Exception as e:
+        print(f"Error: {e}")
+        connection.rollback()  # 回滾事務以防止數據損壞
+        return -1  # 加入失敗
     finally:
         connection.close()
 
-# 9. 傳送群組訊息，返回訊息class GroupMessag，如果失敗返回 -1
-def send_group_message(group_ID, message, uID):
+# 9. 傳送群組訊息，返回訊息class GroupMessag，如果失敗返回 GroupMessage 包含任意ID <=0 表示失敗
+def send_group_message(group_ID:int, message:str, uID:int)->GroupMessage|int:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -222,12 +248,12 @@ def send_group_message(group_ID, message, uID):
     except Exception as e:
         print(f"Error: {e}")
         connection.rollback()  # 出錯時回滾
-        return -1  # 返回 -1 表示失敗
+        return GroupMessage(-1,"",-1,-1)  # 包含任意ID <=0 表示失敗
     finally:
         connection.close()  # 關閉資料庫連接
 
-# 10.發送建立關係的請求 
-def send_family_request(parent_ID, child_ID):
+# 10.家長發送建立關係的請求 
+def send_family_request(parent_ID:id, child_ID:id):
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -245,7 +271,7 @@ def send_family_request(parent_ID, child_ID):
         connection.close()
 
 #11.查詢建立關係的請求
-def select_family_request(uID):
+def select_family_request(uID:int):
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -279,8 +305,8 @@ def select_family_request(uID):
 
 
 
-# 11.同意請求 
-def agree_family_request(parent_uID, child_uID, agree):
+# 11.孩子同意請求 
+def agree_family_request(parent_uID:int, child_uID:int, agree:int):
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -307,6 +333,79 @@ def agree_family_request(parent_uID, child_uID, agree):
         connection.rollback()  # 遇到错误时回滚事务
     finally:
         connection.close()
+
+#12 新增GPT問題 day格式:"yyyy-mm-dd"
+def insert_gpt(subject:str, day:str, uID:int):
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            sql = "INSERT INTO GPT (subject, day, uID) VALUES (%s, %s, %s)"
+            cursor.execute(sql, (subject, day, uID))
+            connection.commit()
+            print("插入成功")
+    except Exception as e:
+        print(f"插入失敗: {e}")
+        connection.rollback()
+    finally:
+        connection.close()
+
+# 13 找出使用者的所有 GPT in list
+def find_gpt(uID:int) -> list[Gpt]:
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT GPT_ID, subject, day, uID FROM GPT WHERE uID=%s"
+            cursor.execute(sql, (uID,))
+            get = cursor.fetchall()
+            GPTs = []
+            for GPT in get:
+                GPTs.append(Gpt(GPT[0], GPT[1], GPT[2], GPT[3]))  # 修正构造方式
+            return GPTs
+    except Exception as e:
+        print(f"Error: {e}")
+        return [Gpt(-1, "", "", -1)]  # 返回空表示查询失败
+    finally:
+        connection.close()
+
+
+# 14 新增GTP訊息 send==1 user to gpt ,send==0 gpt to user
+def insert_gpt_message(gpt_id:int, message:str, sender:bool):
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+                INSERT INTO GPT_MESSAGE (GPT_ID, message, sender) 
+                VALUES (%s, %s, %s)
+            """
+            cursor.execute(sql, (gpt_id, message, sender))
+            connection.commit()
+            print("消息插入成功")
+    except Exception as e:
+        print(f"插入失败: {e}")
+        connection.rollback()
+    finally:
+        connection.close()
+
+# 15 找GPT_ID内的消息
+def find_gpt_message(GPT_ID:int) -> list[GptMessage]:
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM GPT_MESSAGE WHERE GPT_ID=%s"
+            cursor.execute(sql, (GPT_ID,))
+            get = cursor.fetchall()
+            GPTs = []
+            for GPT in get:
+                GPTs.append(GptMessage(GPT[0], GPT[1], GPT[2], GPT[3]))  # 修正构造方式
+            return GPTs
+    except Exception as e:
+        print(f"Error: {e}")
+        return [GptMessage(-1, -1, "", 0)]  # 失败返回ID=-1
+    finally:
+        connection.close()
+
+
+
 
 
 
