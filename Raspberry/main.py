@@ -1,4 +1,10 @@
 #索引值0:封面 1主畫面 2解題 3讀書會 4英文
+
+
+# To 金毛
+# 解題的部分在「TemsolveMainWindow」這個class，我們把使用者輸入給到「solve_problem」裡面，
+# 然後會傳給「gpt_35」，再來會有字串（full_response）把gpt的回覆儲存好 ,
+# 然後就把full_response輸出
 import sys
 from PyQt5.QtWidgets import (
     QApplication,
@@ -156,8 +162,6 @@ class CustomPage(QWidget):
         self.button4 = QPushButton(' ', self)
         self.button5 = QPushButton(' ', self)
 
-
-
 class EnglishPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -253,10 +257,6 @@ class EnglishPage(QWidget):
         else:
             self.translation_label.setText("請輸入英文文本")
     
-
-
-
-
 class TemsolveMainWindow(QWidget):
     def __init__(self, main_window, parent=None):
         super().__init__(parent)
@@ -305,8 +305,8 @@ class TemsolveMainWindow(QWidget):
         self.input_field.setMaximumHeight(100)  # 設置最大高度
         self.input_field.textChanged.connect(self.adjust_input_height)  # 根據文字調整高度
         input_layout.addWidget(self.input_field)
-
-        # 傳送按鈕 (透明)
+    
+        # 傳送按鈕 (透明)   
         send_button = QPushButton("傳送")
         send_button.setFixedSize(50, 50)
         send_button.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
@@ -347,7 +347,7 @@ class TemsolveMainWindow(QWidget):
         document_height = int(self.input_field.document().size().height())
         self.input_field.setFixedHeight(min(document_height + 10, 100))  # 調整最大高度到 150
             # 確保文字可以換行顯示
-    def add_message(self):
+    def add_message(self, response):
         # 取得輸入的文字並清空輸入框
         message = self.input_field.toPlainText()
         self.input_field.clear()
@@ -382,15 +382,16 @@ class TemsolveMainWindow(QWidget):
             # 對方的回答顯示（靠左）
             response_message_layout = QHBoxLayout()
             response_message_layout.setAlignment(Qt.AlignLeft)  # 對齊到左側
-
+            
             # 頭貼部分
             bot_avatar = QLabel()
-            bot_avatar.setPixmap(self.create_circle_avatar("Raspberry/image/0.jpg"))  # 機器人頭貼
+            bot_avatar.setPixmap(self.create_circle_avatar("image/0.jpg"))  # 機器人頭貼
             bot_avatar.setFixedSize(50, 50)  # 設定頭貼大小
             bot_avatar.setScaledContents(True)  # 圖片自動縮放
 
+            response=self.solve_problem(message)
             # 設定對方的回答
-            response_message_label = QLabel("This is a response message.")
+            response_message_label = QLabel( response)
             response_message_label.setStyleSheet("""
                 background-color: #f1f0f0; 
                 border-radius: 20px; 
@@ -419,22 +420,18 @@ class TemsolveMainWindow(QWidget):
             for chunk in stream:
                 if chunk.choices[0].delta.content is not None:
                     full_response  += chunk.choices[0].delta.content #輸出
-            self.answer_label.setText(full_response ) 
+            return full_response  
         except Exception as e:
             self.answer_label.setText(f"發生錯誤: {e}")
 
-    def solve_problem(self):
-        # 取得輸入的問題
-        question = self.input_field.text()
+    def solve_problem(self, question):
         if question:
-            # 清空標籤並顯示等待訊息
-            self.answer_label.setText(f"正在為「{question}」生成解答...")
             # 構造發送給 GPT 的訊息
             messages = [{'role': 'user', 'content': f'你是個國文老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
             # 調用 GPT API 生成解答
-            self.gpt_35_api_stream(messages)
-        else:
-            self.answer_label.setText("請輸入一個問題。")
+            response = self.gpt_35_api_stream(messages)
+            return response
+
 
     def create_circle_avatar(self, image_path):
         # 生成圓形頭貼
@@ -445,7 +442,6 @@ class TemsolveMainWindow(QWidget):
         pixmap.setMask(mask)
         return pixmap
 
-    
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
