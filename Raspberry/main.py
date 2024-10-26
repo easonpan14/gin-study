@@ -32,7 +32,7 @@ import io
 import pymysql
 from translate import Translator
 
-# 資料庫連接配置
+# 資料庫連接配置(以下都是資料庫跟)
 DB_CONFIG = {
     'host': '18.180.122.148',
     'user': 'admin',
@@ -49,6 +49,54 @@ def connect_db():
     except pymysql.MySQLError as e:
         print(f"資料庫連接失敗: {e}")
         return None
+#將gpt資料插入資料庫
+def insert_gpt_message(gpt_id:int, message:str, sender:bool):
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+                INSERT INTO GPT_MESSAGE (GPT_ID, message, sender) 
+                VALUES (%s, %s, %s)
+            """
+            cursor.execute(sql, (gpt_id, message, sender))
+            connection.commit()
+            print("消息插入成功")
+    except Exception as e:
+        print(f"插入失败: {e}")
+        connection.rollback()
+    finally:
+        connection.close()
+
+class User:
+    def __init__(self, uID:int, name:str):
+        self.uID = uID
+        self.name = name
+
+# 群組消息類    消息越晚,group_message_ID越大   uID為發送者 gID為群組
+class GroupMessage:
+    def __init__(self, group_message_ID:int, message:str,Group_ID:int, uID:int):
+        self.gmID = group_message_ID                
+        self.message = message
+        self.Group_ID=Group_ID
+        self.uID = uID
+
+
+class Gpt:
+    def __init__(self, Gpt_ID:int, subject:str,day:str, uID:int):
+        self.Gpt_ID = Gpt_ID                
+        self.subject = subject
+        self.day=day
+        self.uID = uID
+
+
+class GptMessage:
+    def __init__(self, group_message_ID:int, GPT_ID:int,message:str, sender:bool):
+        self.gmID = group_message_ID 
+        self.GPT_ID=GPT_ID               
+        self.message = message
+        self.sender=sender
+        
+##資料庫資料以上
 
 client = OpenAI(
     # defaults to os.environ.get("OPENAI_API_KEY")
@@ -83,19 +131,21 @@ def register_and_login(name: str, account: str, password: str) -> bool:
         connection.close()
 
 # 用戶登入檢查函數
-def login_check(account: str, password: str) -> bool:
+def login_check(account: str, password: str) -> User:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
-            sql = 'SELECT password FROM User WHERE account = %s'
+            sql = 'SELECT uID, name, password FROM User WHERE account = %s'
             cursor.execute(sql, (account,))
             result = cursor.fetchone()
-            if result and result[0] == password:  # 比對明文密碼
-                print("登入成功！")
-                return True
+            if result and result[2] == password:  # 比對密碼
+                # 創建一個 User 對象，並返回
+                return User(result[0], result[1])
             else:
-                print("登入失敗，帳號或密碼錯誤。")
-                return False
+                return None
+    except Exception as e:
+        print(f"資料庫操作失敗: {e}")
+        return None
     finally:
         connection.close()
         
@@ -350,6 +400,8 @@ class TemsolveMainWindow(QWidget):
     def add_message(self, response):
         # 取得輸入的文字並清空輸入框
         message = self.input_field.toPlainText()
+        #把使用者輸入的問題傳進對話框
+        insert_gpt_message(gpt_id, response, True)  
         self.input_field.clear()
 
         if message:
@@ -390,6 +442,9 @@ class TemsolveMainWindow(QWidget):
             bot_avatar.setScaledContents(True)  # 圖片自動縮放
 
             response=self.solve_problem(message)
+            
+            gpt_id = 1  # 假設這裡用 1 作為 gpt_id，就是國文科目
+            insert_gpt_message(gpt_id, response, False)  # False 表示 GPT 的回應
             # 設定對方的回答
             response_message_label = QLabel( response)
             response_message_label.setStyleSheet("""
@@ -659,22 +714,20 @@ class MainWindow(QMainWindow):
     def handleSignup(self):
         username = self.signup_username.text()
         password = self.signup_password.text()
-        password_confirm = self.signup_password_confirm.text()
-
-        if password == password_confirm:
-            # 在這裡處理註冊邏輯 (例如將資料保存到數據庫)
+        if register_and_login(username, username, password):
             print(f"註冊成功！用戶名: {username}")
         else:
-            print("密碼不匹配，請重新輸入。")
+            print("註冊失敗，可能帳號已存在。")
 
     # 處理登入按鈕點擊事件
     def handleSignin(self):
         account = self.signin_acount.text()
         password = self.signin_password.text()
 
-        # 在這裡處理登入邏輯 (例如驗證用戶名和密碼)
-        if account == "test" and password == "1234":  # 這裡只是示範，你應該連接真實數據庫
-            print("登入成功！")
+    # 使用 login_check 函數來驗證用戶名和密碼
+        user = login_check(account, password)
+        if user:
+            print("登入成功！用戶名:", user.name, "用戶ID:", user.uID)
         else:
             print("登入失敗，用戶名或密碼錯誤。")
 
