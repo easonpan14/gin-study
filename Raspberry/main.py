@@ -93,7 +93,7 @@ def login_check(account: str, password: str) -> bool:
         
         
 
-class ProblemSolvingPage(QWidget):
+class ProbSolvingPage(QWidget):
     def __init__(self, main_window,parent=None):
         super().__init__(parent)
         self.setWindowTitle('國文解題')
@@ -108,7 +108,7 @@ class ProblemSolvingPage(QWidget):
         # 返回按鈕
         self.back_button = QPushButton('', self)
         self.back_button.setGeometry(10, 10,int(width*0.0625), int(height*0.0807265))
-        self.back_button.setIcon(QIcon('image/1.'))  # 使用你的返回箭頭圖標
+        self.back_button.setIcon(QIcon('Raspberry/image/1.'))  # 使用你的返回箭頭圖標
         self.back_button.setIconSize(QSize(40, 40))
         #self.back_button.setStyleSheet('background-color: transparent; border: none;')
         self.back_button.clicked.connect(self.go_back)  # 連接到返回功能
@@ -136,14 +136,14 @@ class ProblemSolvingPage(QWidget):
         # 相機按鈕 (左下角)
         self.camera_button = QPushButton('', self)
         self.camera_button.setGeometry(10, 920, 50, 50)
-        self.camera_button.setIcon(QIcon('image/1.jpg'))  # 使用相機圖示
+        self.camera_button.setIcon(QIcon('Raspberry/image/1.jpg'))  # 使用相機圖示
         self.camera_button.setIconSize(QSize(40, 40))
         #self.camera_button.setStyleSheet('background-color: transparent; border: none;')
 
         # 送出按鈕 (右下角紙飛機)
         self.send_button = QPushButton('', self)
         self.send_button.setGeometry(880,920, 50, 50)
-        self.send_button.setIcon(QIcon('image/1.jpg'))  # 使用紙飛機圖示
+        self.send_button.setIcon(QIcon('Raspberry/image/1.jpg'))  # 使用紙飛機圖示
         self.send_button.setIconSize(QSize(40, 40))
         self.send_button.setStyleSheet('background-color: transparent; border: none;')
         #self.send_button.clicked.connect(self.solve_problem)
@@ -205,7 +205,7 @@ class CustomPage(QWidget):
         self.background_label.setGeometry(0, 0, self.width(), self.height())
 
         # 呼叫設定背景圖片函數
-        self.set_background_image('image/3.jpg')
+        self.set_background_image('Raspberry/image/3.jpg')
 
         # 創建按鈕
         self.create_buttons()
@@ -253,89 +253,37 @@ class CustomPage(QWidget):
         self.button4 = QPushButton(' ', self)
         self.button5 = QPushButton(' ', self)
 
-class temsolveMainWindow(QWidget):
-    def __init__(self, main_window,parent=None):
-        super().__init__()
 
+class TemsolveMainWindow(QWidget):
+    def __init__(self, main_window, parent=None):
+        super().__init__(parent)
         # 設定主視窗
         self.setWindowTitle("Chat Window Example")
-        self.resize(400, 600)
-
-        # 設置背景圖片（中央Widget已經設置好後再調用）
-        self.set_background_image('/Users/linchengyu/Downloads/account_sing_up_page.jpg')
-
+        self.showFullScreen()  # 設置為全螢幕
+        self.set_background_image('/Users/linchengyu/Desktop/temopp/113-1_interface_app_version-3.png')  # 設置全螢幕背景
 
         # 主佈局
-        main_layout = QVBoxLayout()
-
-        # 左上角箭頭按鈕
+        main_layout = QVBoxLayout(self)
+        
+        # 上方返回按鈕
         top_layout = QHBoxLayout()
         back_button = QPushButton("")
-        back_button.setFixedSize(50, 50)  # 設定按鈕大小
-        back_button.setStyleSheet("""
-            background-color: rgba(0, 0, 0, 0);
-        """)
+        back_button.setFixedSize(50, 50)
+        back_button.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
         top_layout.addWidget(back_button)
-        top_layout.setAlignment(Qt.AlignLeft)  # 按鈕靠左對齊
+        top_layout.setAlignment(Qt.AlignLeft)
         main_layout.addLayout(top_layout)
 
-        # 滾動區域
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # 添加獨立的滾動區域
+        main_layout.addWidget(self.create_scroll_area())
 
-        # 設定滑動條樣式為灰色且不透明
-        self.scroll_area.setStyleSheet("""
-            QScrollBar:vertical {
-                border: none;
-                background: #f0f0f0;  # 背景設置為灰色
-                width: 14px;  # 調整寬度
-                margin: 0px 0px 0px 0px;
-            }
-
-            QScrollBar::handle:vertical {
-                background: #a0a0a0;  # 設置滑動塊為較深的灰色
-                min-height: 20px;
-                border-radius: 7px;  # 圓角設置
-            }
-
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                background: none;
-                height: 0px;
-                subcontrol-position: none;
-                subcontrol-origin: margin;
-            }
-
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-                background: none;
-            }
-        """)
-
-        # 用來放對話內容的Widget
-        self.chat_content = QWidget()
-        self.chat_layout = QVBoxLayout(self.chat_content)
-
-        # 設置間距以確保頭貼不會被滑動條覆蓋
-        self.chat_layout.setContentsMargins(10, 10, 10, 10)  # 設置上下左右的間距
-        self.chat_layout.setSpacing(10)  # 設置控件之間的間隔
-
-        # 添加一個空間物件到最上方
-        self.spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.chat_layout.addItem(self.spacer)
-
-        # 初始不滾動，隨著對話新增
-        self.scroll_area.setWidget(self.chat_content)
-        main_layout.addWidget(self.scroll_area)
-
-        # 建立輸入區域
+        # 底部輸入區域
         input_layout = QHBoxLayout()
-
-        # 左下角相機按鈕
+        
+        # 相機按鈕
         camera_button = QPushButton("")
         camera_button.setFixedSize(50, 50)
-        camera_button.setStyleSheet("""
-            background-color: rgba(0, 0, 0, 0);
-        """)
+        camera_button.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
         input_layout.addWidget(camera_button)
 
         # 輸入框
@@ -350,27 +298,62 @@ class temsolveMainWindow(QWidget):
         self.input_field.returnPressed.connect(self.add_message)
         input_layout.addWidget(self.input_field)
 
-        # 右下角傳送按鈕
+        # 傳送按鈕
         send_button = QPushButton("")
         send_button.setFixedSize(50, 50)
-        send_button.setStyleSheet("""
-            background-color: rgba(0, 0, 0, 0);
-        """)
+        send_button.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
         input_layout.addWidget(send_button)
 
-        main_layout.addLayout(input_layout)  # 添加輸入區域的佈局
-        self.setLayout(main_layout)  # 將主佈局設置為主Widget的佈局
+        main_layout.addLayout(input_layout)
 
     def set_background_image(self, image_path):
-        # 設置背景圖片
+        # 設置全螢幕背景圖片
         self.setAutoFillBackground(True)
         palette = QPalette()
         background = QPixmap(image_path)
-        palette.setBrush(QPalette.Window, QBrush(background.scaled(self.size(), Qt.IgnoreAspectRatio, Qt.SmoothTransformation)))
+        palette.setBrush(QPalette.Window, QBrush(background.scaled(self.screen().size(), Qt.IgnoreAspectRatio, Qt.SmoothTransformation)))
         self.setPalette(palette)
 
-        # 確保內部控件不覆蓋背景（使它們背景透明）
-        self.setAutoFillBackground(False)
+    def create_scroll_area(self):
+        # 建立滾動區域
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll_area.setStyleSheet("""
+            background-color: rgba(0, 255, 255, 0.5);  /* 半透明背景 */
+            QScrollBar:vertical {
+                border: none;
+                background: #f0f0f0;
+                width: 14px;
+                margin: 0px 0px 0px 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: #a0a0a0;
+                min-height: 20px;
+                border-radius: 7px;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                background: none;
+                height: 0px;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: none;
+            }
+        """)
+
+
+        # 聊天內容Widget
+        self.chat_content = QWidget()
+        self.chat_layout = QVBoxLayout(self.chat_content)
+        self.chat_layout.setContentsMargins(10, 10, 10, 10)
+        self.chat_layout.setSpacing(10)
+
+        # 添加頂部空白區域
+        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.chat_layout.addItem(spacer)
+        
+        scroll_area.setWidget(self.chat_content)
+        return scroll_area
 
     def add_message(self):
         # 取得輸入的文字並清空輸入框
@@ -378,69 +361,62 @@ class temsolveMainWindow(QWidget):
         self.input_field.clear()
 
         if message:
-            # 用戶訊息顯示（靠右）
+            # 用戶訊息
             user_message_layout = QHBoxLayout()
-            user_message_layout.setAlignment(Qt.AlignRight)  # 對齊到右側
-
-            # 頭貼部分
+            user_message_layout.setAlignment(Qt.AlignRight)
+            
             user_avatar = QLabel()
-            user_avatar.setPixmap(self.create_circle_avatar("/Users/linchengyu/Downloads/account_sing_up_page.jpg"))  # 用戶頭貼
-            user_avatar.setFixedSize(50, 50)  # 設定頭貼大小
-            user_avatar.setScaledContents(True)  # 圖片自動縮放
-
-            # 設定用戶的輸入框
+            user_avatar.setPixmap(self.create_circle_avatar("Raspberry/image/0.jpg"))
+            user_avatar.setFixedSize(50, 50)
+            user_avatar.setScaledContents(True)
+            
             user_message_label = QLabel(message)
             user_message_label.setStyleSheet("""
-                background-color: #dcf8c6; 
-                border-radius: 20px; 
-                padding: 10px; 
+                background-color: #dcf8c6;
+                border-radius: 20px;
+                padding: 10px;
                 word-wrap: break-word;
-                max-width: 300px;  /* 限制最大寬度 */
+                max-width: 300px;
             """)
-            user_message_label.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-            user_message_label.setWordWrap(True)  # 啟用自動換行
-
-            user_message_layout.addWidget(user_message_label)  # 用戶訊息在頭貼右側
-            user_message_layout.addWidget(user_avatar)  # 頭貼放在右邊
+            user_message_label.setWordWrap(True)
+            user_message_layout.addWidget(user_message_label)
+            user_message_layout.addWidget(user_avatar)
             self.chat_layout.addLayout(user_message_layout)
 
-            # 對方的回答顯示（靠左）
+            # 回應訊息
             response_message_layout = QHBoxLayout()
-            response_message_layout.setAlignment(Qt.AlignLeft)  # 對齊到左側
-
-            # 頭貼部分
+            response_message_layout.setAlignment(Qt.AlignLeft)
+            
             bot_avatar = QLabel()
-            bot_avatar.setPixmap(self.create_circle_avatar("//Users/linchengyu/Downloads/account_sing_up_page.jpg"))  # 機器人頭貼
-            bot_avatar.setFixedSize(50, 50)  # 設定頭貼大小
-            bot_avatar.setScaledContents(True)  # 圖片自動縮放
-
-            # 設定對方的回答
+            bot_avatar.setPixmap(self.create_circle_avatar("Raspberry/image/0.jpg"))
+            bot_avatar.setFixedSize(50, 50)
+            bot_avatar.setScaledContents(True)
+            
             response_message_label = QLabel("This is a response message.")
             response_message_label.setStyleSheet("""
-                background-color: #f1f0f0; 
-                border-radius: 20px; 
-                padding: 10px; 
-                word-wrap: break-word; 
-                max-width: 300px;  /* 限制最大寬度 */
+                background-color: #f1f0f0;
+                border-radius: 20px;
+                padding: 10px;
+                word-wrap: break-word;
+                max-width: 300px;
             """)
-            response_message_label.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-            response_message_label.setWordWrap(True)  # 啟用自動換行
-
-            response_message_layout.addWidget(bot_avatar)  # 頭貼放在左邊
-            response_message_layout.addWidget(response_message_label)  # 機器人回答在頭貼右側
+            response_message_label.setWordWrap(True)
+            response_message_layout.addWidget(bot_avatar)
+            response_message_layout.addWidget(response_message_label)
             self.chat_layout.addLayout(response_message_layout)
 
-            # 滾動條位置設定
+            # 自動滾動到底部
             QTimer.singleShot(10, lambda: self.scroll_area.verticalScrollBar().setValue(self.scroll_area.verticalScrollBar().maximum()))
 
     def create_circle_avatar(self, image_path):
         # 生成圓形頭貼
         pixmap = QPixmap(image_path)
         size = min(pixmap.width(), pixmap.height())
-        pixmap = pixmap.scaled(size, size)  # 縮放圖片以便於裁切
-        mask = pixmap.createMaskFromColor(Qt.transparent)  # 生成透明遮罩
-        pixmap.setMask(mask)  # 設置遮罩
+        pixmap = pixmap.scaled(size, size)
+        mask = pixmap.createMaskFromColor(Qt.transparent)
+        pixmap.setMask(mask)
         return pixmap
+
 
 class solveMainWindow(QWidget):
     def __init__(self, main_window, parent=None):
@@ -658,7 +634,7 @@ class EnglishPage(QWidget):
          # 加載背景圖片
         self.background_label = QLabel(self)
         self.background_label.setGeometry(0, 0, self.width(), self.height())
-        self.set_background_image('image/5.jpg')  # Adjust the path based on where the file is saved
+        self.set_background_image('Raspberry/image/5.jpg')  # Adjust the path based on where the file is saved
         #創建輸入框
         self.input_field = QLineEdit(self)
         self.input_field.setGeometry(int(width*0.078125), int(height*0.282542), int(width*0.3125), int(height*0.2018163))
@@ -732,7 +708,7 @@ class MainWindow(QMainWindow):
         
         # 第一頁
         self.page1 = QLabel(self)
-        pixmap1 = QPixmap('image/1.jpg')  # 替換為你的第一張圖片
+        pixmap1 = QPixmap('Raspberry/image/1.jpg')  # 替換為你的第一張圖片
         self.page1.setPixmap(pixmap1)
         self.page1.setScaledContents(True)
         self.stacked_widget.addWidget(self.page1)
@@ -741,7 +717,7 @@ class MainWindow(QMainWindow):
 
         # 第二頁 (選大類別頁面)
         self.page2 = QLabel(self)
-        pixmap2 = QPixmap('image/2.jpg')  # 替換為你的第二張圖片
+        pixmap2 = QPixmap('Raspberry/image/2.jpg')  # 替換為你的第二張圖片
         self.page2.setPixmap(pixmap2)
         self.page2.setScaledContents(True)
         self.stacked_widget.addWidget(self.page2)
@@ -754,7 +730,7 @@ class MainWindow(QMainWindow):
 
         # 第四頁（讀書會與聊聊）
         self.page4 = QLabel(self)
-        pixmap4 = QPixmap('image/7.jpg')
+        pixmap4 = QPixmap('Raspberry/image/7.jpg')
         self.page4.setPixmap(pixmap4)
         self.page4.setScaledContents(True)
         self.stacked_widget.addWidget(self.page4)
@@ -769,7 +745,7 @@ class MainWindow(QMainWindow):
 
         # 第六頁 (統計頁面)
         self.page6 = QLabel(self)
-        pixmap6 = QPixmap('image/Statistics.jpg')
+        pixmap6 = QPixmap('Raspberry/image/Statistics.jpg')
         self.page6.setPixmap(pixmap6)
         self.page6.setScaledContents(True)
         self.stacked_widget.addWidget(self.page6)
@@ -777,20 +753,20 @@ class MainWindow(QMainWindow):
         self.button_study_club_page6 = None
         self.page6_back_btn = None
         # 國文解題頁面
-        self.problem_solving_page = solveMainWindow(self)
+        self.problem_solving_page = TemsolveMainWindow(self)
         self.stacked_widget.addWidget(self.problem_solving_page)
         self.page3.button1.clicked.connect(self.showProblemSolvingPage)
 
         #註冊介面
         self.signup_page = QLabel(self)
-        pixmapsignup = QPixmap('image/account_sing_up_page.jpg')
+        pixmapsignup = QPixmap('Raspberry/image/account_sing_up_page.jpg')
         self.signup_page.setPixmap(pixmapsignup)
         self.signup_page.setScaledContents(True)
         self.stacked_widget.addWidget(self.signup_page)
         self.createSignupPage()
         #登入介面
         self.signin_page = QLabel(self)
-        pixmapsignin = QPixmap('image/account_sing_in_page.jpg')
+        pixmapsignin = QPixmap('Raspberry/image/account_sing_in_page.jpg')
         self.signin_page.setPixmap(pixmapsignin)
         self.signin_page.setScaledContents(True) # 這裡你可以自訂頁面的內容
         self.stacked_widget.addWidget(self.signin_page)
