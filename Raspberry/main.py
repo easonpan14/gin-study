@@ -1,5 +1,10 @@
 #索引值0:封面 1主畫面 2解題 3讀書會 4英文
-
+from PyQt5.QtGui import QPixmap, QFont
+from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout, QTableWidget, QTableWidgetItem
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QHeaderView
+from datetime import datetime
 
 # To 金毛
 # 解題的部分在「TemsolveMainWindow」這個class，我們把使用者輸入給到「solve_problem」裡面，
@@ -30,8 +35,14 @@ import playsound
 import pygame
 import io
 import pymysql
-from translate import Translator
-
+msg=""
+pwd=""
+gpt_id=0
+client = OpenAI(
+    # defaults to os.environ.get("OPENAI_API_KEY")
+    api_key="sk-uJ3B62eXV4XouZSH7htWKYzf5QFj1W0WQd4AAn072WQPzptn",
+    base_url="https://api.chatanywhere.tech/v1"
+)
 # 資料庫連接配置(以下都是資料庫跟)
 DB_CONFIG = {
     'host': '18.180.122.148',
@@ -40,6 +51,34 @@ DB_CONFIG = {
     'database': 'my_database',
     'charset': 'utf8mb4',
 }
+class User:
+    def __init__(self, uID:int, name:str):
+        self.uID = uID
+        self.name = name
+
+# 群組消息類    消息越晚,group_message_ID越大   uID為發送者 gID為群組
+class GroupMessage:
+    def __init__(self, group_message_ID:int, message:str,Group_ID:int, uID:int):
+        self.gmID = group_message_ID                
+        self.message = message
+        self.Group_ID=Group_ID
+        self.uID = uID
+
+class Gpt:
+    def __init__(self, Gpt_ID:int, subject:str,day:str, uID:int):
+        self.Gpt_ID = Gpt_ID                
+        self.subject = subject
+        self.day=day
+        self.uID = uID
+
+class GptMessage:
+    def __init__(self, group_message_ID:int, GPT_ID:int,message:str, sender:bool):
+        self.gmID = group_message_ID 
+        self.GPT_ID=GPT_ID               
+        self.message = message
+        self.sender=sender
+        
+##資料庫資料以上
 
 # 資料庫連接函數
 def connect_db():
@@ -50,6 +89,21 @@ def connect_db():
         print(f"資料庫連接失敗: {e}")
         return None
 #將gpt資料插入資料庫
+def insert_gpt(subject:str, day:str, uID:int)->int:
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            sql = "INSERT INTO GPT (subject, day, uID) VALUES (%s, %s, %s)"
+            cursor.execute(sql, (subject, day, uID))
+            connection.commit()
+            print("插入成功")
+            return  cursor.lastrowid
+    except Exception as e:
+        print(f"插入失敗: {e}")
+        connection.rollback()
+        return -1
+    finally:
+        connection.close()
 def insert_gpt_message(gpt_id:int, message:str, sender:bool):
     connection = connect_db()
     try:
@@ -66,43 +120,6 @@ def insert_gpt_message(gpt_id:int, message:str, sender:bool):
         connection.rollback()
     finally:
         connection.close()
-
-class User:
-    def __init__(self, uID:int, name:str):
-        self.uID = uID
-        self.name = name
-
-# 群組消息類    消息越晚,group_message_ID越大   uID為發送者 gID為群組
-class GroupMessage:
-    def __init__(self, group_message_ID:int, message:str,Group_ID:int, uID:int):
-        self.gmID = group_message_ID                
-        self.message = message
-        self.Group_ID=Group_ID
-        self.uID = uID
-
-
-class Gpt:
-    def __init__(self, Gpt_ID:int, subject:str,day:str, uID:int):
-        self.Gpt_ID = Gpt_ID                
-        self.subject = subject
-        self.day=day
-        self.uID = uID
-
-
-class GptMessage:
-    def __init__(self, group_message_ID:int, GPT_ID:int,message:str, sender:bool):
-        self.gmID = group_message_ID 
-        self.GPT_ID=GPT_ID               
-        self.message = message
-        self.sender=sender
-        
-##資料庫資料以上
-
-client = OpenAI(
-    # defaults to os.environ.get("OPENAI_API_KEY")
-    api_key="sk-uJ3B62eXV4XouZSH7htWKYzf5QFj1W0WQd4AAn072WQPzptn",
-    base_url="https://api.chatanywhere.tech/v1"
-)
 
 # 用戶註冊函數
 def register_and_login(name: str, account: str, password: str) -> bool:
@@ -149,6 +166,22 @@ def login_check(account: str, password: str) -> User:
     finally:
         connection.close()
         
+def get_all_gpt_ids() -> list[int]:
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            # 查詢 GPT 資料表中的所有 GPT_ID
+            sql = "SELECT GPT_ID FROM GPT"
+            cursor.execute(sql)
+            results = cursor.fetchall()
+            # 將所有 GPT_ID 存入列表
+            gpt_ids = [row[0] for row in results]
+            return gpt_ids
+    except Exception as e:
+        print(f"查詢失敗: {e}")
+        return []
+    finally:
+        connection.close()
 
 # 自訂第三頁的視窗
 class CustomPage(QWidget):
@@ -306,7 +339,157 @@ class EnglishPage(QWidget):
             self.translation_label.setText(f"{translation}")
         else:
             self.translation_label.setText("請輸入英文文本")
-    
+            
+#分析葉面  
+class AnalysisPage(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.main_window = parent  # 保存父窗口的引用
+        self.setWindowTitle('Analysis Page')
+        self.setGeometry(100, 100, 1024, 768)
+        width = self.width()
+        height = self.height()
+        
+        # 創建背景標籤
+        self.background_label = QLabel(self)
+        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.set_background_image('image/8.png')
+
+        # 設置佈局來防止其他部件影響背景
+        self.setLayout(QVBoxLayout())
+        # 創建返回按鈕 這她媽沒用阿 耖你媽
+        self.back_button = QPushButton('', self)
+        self.back_button.setGeometry(0, 0, int(width*0.0625), int(height*0.0807265))
+        #分析國文
+        self.chinese_button = QPushButton('國文', self)
+        self.chinese_button.setGeometry(500, 600, 120, 60)  # 設定按鈕的位置和大小
+        self.chinese_button.clicked.connect(self.go_to_chinese_analysis_page)  # 設定點擊事件
+        #分析英文
+        self.example_button = QPushButton('英文', self)
+        self.example_button.setGeometry(700, 1200, 120, 60)  # 設定按鈕的位置和大小
+        #分析數學
+        self.example_button = QPushButton('數學', self)
+        self.example_button.setGeometry(900, 1200, 120, 60)  # 設定按鈕的位置和大小
+        #分析自然
+        self.example_button = QPushButton('自然', self)
+        self.example_button.setGeometry(1100, 1200, 120, 60)  # 設定按鈕的位置和大小
+        #分析社會
+        self.example_button = QPushButton('社會', self)
+        self.example_button.setGeometry(1300, 1200, 120, 60)  # 設定按鈕的位置和大小
+
+    def set_background_image(self, image_path):
+        # 加載背景圖片
+        background_image = QPixmap(image_path)
+        if background_image.isNull():
+            print(f"圖片加載失敗：{image_path}")
+        else:
+            # 設置圖片到 QLabel 並拉伸以適應窗口大小
+            self.background_label.setPixmap(background_image)
+            self.background_label.setScaledContents(True)
+
+    def resizeEvent(self, event):
+        # 調整背景大小以適應窗口調整
+        self.background_label.setGeometry(0, 0, self.width(), self.height())
+    def go_to_chinese_analysis_page(self):
+        # 確保父窗口存在並且有 show_chinese_analysis_page 方法
+        if self.main_window and hasattr(self.main_window, 'show_chinese_analysis_page'):
+            self.main_window.show_chinese_analysis_page()  # 通知主視窗進行頁面切換
+        else:
+            print("父窗口沒有方法 show_chinese_analysis_page")
+#美編國文分析葉面啦幹您娘
+class ChineseAnalysisPage(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle('國文分析')
+        self.setGeometry(100, 100, 1024, 768)
+
+        # 創建背景標籤
+        self.background_label = QLabel(self)
+        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.set_background_image('image/9.png')
+
+        # 設置主佈局
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+        self.setLayout(main_layout)
+
+        # 創建表格
+        self.table_widget = QTableWidget(self)
+        self.table_widget.setRowCount(5)  # 設置行數
+        self.table_widget.setColumnCount(3)  # 設置列數
+        self.table_widget.setHorizontalHeaderLabels(['編號', '提問', '日期'])  # 設置標題
+
+        # 填充範例數據
+        for row in range(5):
+            for col in range(3):
+                item = QTableWidgetItem(f'內容 {row+1}-{col+1}')
+                item.setFont(QFont("Arial", 14))  # 設置字體大小
+                item.setTextAlignment(Qt.AlignCenter)  # 置中對齊
+                self.table_widget.setItem(row, col, item)
+
+        # 自動調整列寬和行高，使其填滿表格
+        self.table_widget.horizontalHeader().setStretchLastSection(True)
+        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table_widget.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        # 設置表格樣式
+        self.table_widget.setStyleSheet("""
+            QTableWidget {
+                background-color: #f0f4f8;
+                border-radius: 10px;
+                padding: 0px;
+            }
+            QTableWidget::item {
+                border-bottom: 1px solid #d0d7de;
+                padding: 10px;
+            }
+            QHeaderView::section {
+                background-color: #e9eff5;
+                padding: 5px;
+                border: none;
+                border-bottom: 2px solid #d0d7de;
+            }
+        """)
+
+        # 創建一個垂直和水平佈局來讓表格居中
+        v_layout = QVBoxLayout()
+        v_layout.addStretch()  # 添加彈性空間使表格垂直居中
+        v_layout.addWidget(self.table_widget)
+        v_layout.addStretch()  # 添加彈性空間使表格垂直居中
+
+        h_layout = QHBoxLayout()
+        h_layout.addStretch()  # 添加彈性空間使表格水平居中
+        h_layout.addLayout(v_layout)
+        h_layout.addStretch()  # 添加彈性空間使表格水平居中
+
+        # 把佈局添加到主佈局中
+        main_layout.addLayout(h_layout)
+
+        # 根據窗口大小自動調整表格尺寸
+        self.adjust_table_size()
+
+    def set_background_image(self, image_path):
+        # 加載背景圖片
+        background_image = QPixmap(image_path)
+        if background_image.isNull():
+            print(f"圖片加載失敗：{image_path}")
+        else:
+            # 設置圖片到 QLabel 並拉伸以適應窗口大小
+            self.background_label.setPixmap(background_image)
+            self.background_label.setScaledContents(True)
+
+    def resizeEvent(self, event):
+        # 調整背景大小以適應窗口調整
+        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.adjust_table_size()
+
+    def adjust_table_size(self):
+        # 根據窗口大小自動調整表格的大小
+        width = self.width() * 0.8  # 設置表格寬度為視窗的80%
+        height = self.height() * 0.6  # 設置表格高度為視窗的60%
+        self.table_widget.setFixedSize(QSize(int(width), int(height)))
+
 class TemsolveMainWindow(QWidget):
     def __init__(self,  parent=None, objects=""):
         super().__init__(parent)
@@ -413,7 +596,13 @@ class TemsolveMainWindow(QWidget):
         # 取得輸入的文字並清空輸入框
         message = self.input_field.toPlainText()
         #把使用者輸入的問題傳進對話框
-        insert_gpt_message(gpt_id, response, True)  
+        
+        current_date = datetime.now()
+        date_str = current_date.strftime("%Y-%m-%d")
+        current_user = login_check(msg, pwd)  # 假設這是你登入的地方
+        global gpt_id
+        gpt_id = insert_gpt("國文", date_str, current_user.uID)
+        insert_gpt_message(gpt_id, message, True)  
         self.input_field.clear()
 
         if message:
@@ -452,12 +641,16 @@ class TemsolveMainWindow(QWidget):
             bot_avatar.setPixmap(self.create_circle_avatar("image/0.jpg"))  # 機器人頭貼
             bot_avatar.setFixedSize(50, 50)  # 設定頭貼大小
             bot_avatar.setScaledContents(True)  # 圖片自動縮放
-
             response=self.solve_problem(message)
-            
-            gpt_id = 1  # 假設這裡用 1 作為 gpt_id，就是國文科目
-            insert_gpt_message(gpt_id, response, False)  # False 表示 GPT 的回應
+
+            current_date = datetime.now()
+            date_str = current_date.strftime("%Y-%m-%d")
+            current_user = login_check(msg, pwd)  # 假設這是你登入的地方
+            gpt_id = insert_gpt("國文", date_str, current_user.uID)
+            insert_gpt_message(gpt_id, response, False)  
             # 設定對方的回答
+            
+            
             response_message_label = QLabel( response)
             response_message_label.setStyleSheet("""
                 background-color: #f1f0f0; 
@@ -510,6 +703,7 @@ class TemsolveMainWindow(QWidget):
         mask = pixmap.createMaskFromColor(Qt.transparent)
         pixmap.setMask(mask)
         return pixmap
+        
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -570,6 +764,16 @@ class MainWindow(QMainWindow):
         self.button_study_club_page6 = None
         self.page6_back_btn = None
 
+        #分析葉面
+        self.analysis_page = AnalysisPage(self)
+        self.stacked_widget.addWidget(self.analysis_page)
+        
+         # 替換 QLabel 為新的 ChineseAnalysisPage
+        self.chinese_analysis_page = ChineseAnalysisPage(self)
+        self.stacked_widget.addWidget(self.chinese_analysis_page)
+
+        
+        
         # 國文解題頁面
         self.chinese_problem_solving_page = TemsolveMainWindow(self,"chinese")
         self.stacked_widget.addWidget(self.chinese_problem_solving_page)
@@ -688,7 +892,8 @@ class MainWindow(QMainWindow):
 
         if not self.button_chat_page6:
             self.button_chat_page6 = QPushButton('', self.page6)
-        self.button_chat_page6.setGeometry(int(width * 0.6), int(height * 0.509), int(button_width), int(button_height))
+            self.button_chat_page6.setGeometry(int(width * 0.6), int(height * 0.509), int(button_width), int(button_height))
+            self.button_chat_page6.clicked.connect(self.goToAnalysisPage)  # 設置點擊事件
 
         if not self.button_study_club_page6:
             self.button_study_club_page6 = QPushButton('', self.page6)
@@ -698,7 +903,10 @@ class MainWindow(QMainWindow):
             self.page6_back_btn = QPushButton('', self.page6)
             self.page6_back_btn.clicked.connect(self.goBackToSecondPage)
         self.page6_back_btn.setGeometry(0, 0, int(width * 0.06), int(height * 0.074))
-
+    def goToAnalysisPage(self):
+        # 切換到分析頁面
+        self.stacked_widget.setCurrentWidget(self.analysis_page)
+    
     def createSignupPage(self):
         self.signup_username = QLineEdit(self.signup_page)
         self.signup_username.setPlaceholderText("請輸入用戶名")
@@ -750,8 +958,11 @@ class MainWindow(QMainWindow):
 
     # 處理註冊按鈕點擊事件
     def handleSignup(self):
+        global msg, pwd  # 告訴 Python 修改的是全局變量
         username = self.signup_username.text()
         password = self.signup_password.text()
+        msg=username
+        pwd=password
         if register_and_login(username, username, password):
             print(f"註冊成功！用戶名: {username}")
         else:
@@ -759,8 +970,11 @@ class MainWindow(QMainWindow):
 
     # 處理登入按鈕點擊事件
     def handleSignin(self):
+        global msg, pwd  # 告訴 Python 修改的是全局變量
         account = self.signin_acount.text()
         password = self.signin_password.text()
+        msg=account
+        pwd=password
 
     # 使用 login_check 函數來驗證用戶名和密碼
         user = login_check(account, password)
@@ -811,6 +1025,8 @@ class MainWindow(QMainWindow):
     def showSigninPage(self):
         self.stacked_widget.setCurrentWidget(self.signin_page)
 
+    def show_chinese_analysis_page(self):
+        self.stacked_widget.setCurrentWidget(self.chinese_analysis_page)
 
 
 if __name__ == '__main__':
