@@ -12,9 +12,10 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QScrollArea,
     QSpacerItem,
-    QSizePolicy
+    QSizePolicy,
+    QTextEdit
 )
-from PyQt5.QtGui import QPixmap, QPalette, QBrush, QIcon
+from PyQt5.QtGui import QPixmap,QPalette,  QPainter, QIcon
 from PyQt5.QtCore import Qt, QTimer, QRect, QSize
 from openai import OpenAI
 from gtts import gTTS
@@ -23,7 +24,7 @@ import playsound
 import pygame
 import io
 import pymysql
-
+from translate import Translator
 
 # 資料庫連接配置
 DB_CONFIG = {
@@ -42,6 +43,7 @@ def connect_db():
     except pymysql.MySQLError as e:
         print(f"資料庫連接失敗: {e}")
         return None
+
 client = OpenAI(
     # defaults to os.environ.get("OPENAI_API_KEY")
     api_key="sk-uJ3B62eXV4XouZSH7htWKYzf5QFj1W0WQd4AAn072WQPzptn",
@@ -91,105 +93,6 @@ def login_check(account: str, password: str) -> bool:
     finally:
         connection.close()
         
-        
-
-class ProbSolvingPage(QWidget):
-    def __init__(self, main_window,parent=None):
-        super().__init__(parent)
-        self.setWindowTitle('國文解題')
-        self.setGeometry(100, 100, 1024, 768)
-        # 設定背景顏色
-        self.setStyleSheet("background-color: #E0F7FA;")  # 淺藍色背景
-        self.main_window = main_window 
-        # 設定佈局
-        layout = QVBoxLayout()
-        width=self.width()
-        height=self.height()
-        # 返回按鈕
-        self.back_button = QPushButton('', self)
-        self.back_button.setGeometry(10, 10,int(width*0.0625), int(height*0.0807265))
-        self.back_button.setIcon(QIcon('Raspberry/image/1.'))  # 使用你的返回箭頭圖標
-        self.back_button.setIconSize(QSize(40, 40))
-        #self.back_button.setStyleSheet('background-color: transparent; border: none;')
-        self.back_button.clicked.connect(self.go_back)  # 連接到返回功能
-        layout.addWidget(self.back_button, alignment=Qt.AlignLeft)  # 將按鈕放在左上角
-
-        # 國文按鈕 (模仿圖片中的按鈕)
-        self.chinese_button = QPushButton('國文', self)
-        self.chinese_button.setGeometry(70, 10, 80, 40)
-        self.chinese_button.setStyleSheet('background-color: #64B5F6; border-radius: 20px; color: white; font-size: 40px;')
-
-        # 創建顯示解答區域
-        self.answer_label = QLabel("解答會顯示在這裡", self)
-        self.answer_label.setStyleSheet('font-size: 18px; color: black;')
-        self.answer_label.setGeometry(1000, 100, 900, 300)  # 手動設置顯示解答區域的位置和大小
-        self.answer_label.setStyleSheet('font-size: 18px; color: black; background-color: white; padding: 10px;')
-        self.answer_label.setWordWrap(True)
-        layout.addWidget(self.answer_label)
-
-        # 創建輸入框 (放置在底部)
-        self.input_field = QLineEdit(self)
-        self.input_field.setPlaceholderText("請輸入國文問題")
-        self.input_field.setGeometry(60, 920, 800, 50)  # 調整輸入框的位置和大小
-        self.input_field.setStyleSheet('font-size: 18px; padding: 10px; border-radius: 25px; background-color: #B3E5FC;')
-
-        # 相機按鈕 (左下角)
-        self.camera_button = QPushButton('', self)
-        self.camera_button.setGeometry(10, 920, 50, 50)
-        self.camera_button.setIcon(QIcon('Raspberry/image/1.jpg'))  # 使用相機圖示
-        self.camera_button.setIconSize(QSize(40, 40))
-        #self.camera_button.setStyleSheet('background-color: transparent; border: none;')
-
-        # 送出按鈕 (右下角紙飛機)
-        self.send_button = QPushButton('', self)
-        self.send_button.setGeometry(880,920, 50, 50)
-        self.send_button.setIcon(QIcon('Raspberry/image/1.jpg'))  # 使用紙飛機圖示
-        self.send_button.setIconSize(QSize(40, 40))
-        self.send_button.setStyleSheet('background-color: transparent; border: none;')
-        #self.send_button.clicked.connect(self.solve_problem)
-
-        self.setLayout(layout)
-
-    def resizeEvent(self, event):
-         # 在窗口調整大小時，重新調整背景圖片大小
-        self.back_button.setGeometry(10, 10, 50, 50)
-        self.send_button.setGeometry(880,920, 50, 50)
-        self.camera_button.setGeometry(10, 920, 50, 50)
-        self.input_field.setGeometry(60, 920, 800, 50)  # 調整輸入框的位置和大小
-        self.answer_label.setGeometry(60, 50, 900, 300)  # 手動設置顯示解答區域的位置和大小
-        self.chinese_button.setGeometry(70, 10, 80, 40)
-
-
-    def gpt_35_api_stream(self, messages: list): #GPT 輸出
-        try:
-            stream = client.chat.completions.create(
-                model='gpt-3.5-turbo',
-                messages=messages,
-                stream=True,
-            )
-            full_response = ""
-            for chunk in stream:
-                if chunk.choices[0].delta.content is not None:
-                    full_response  += chunk.choices[0].delta.content
-            self.answer_label.setText(full_response )
-        except Exception as e:
-            self.answer_label.setText(f"發生錯誤: {e}")
-
-    def solve_problem(self):
-        # 取得輸入的問題
-        question = self.input_field.text()
-        if question:
-            # 清空標籤並顯示等待訊息
-            self.answer_label.setText(f"正在為「{question}」生成解答...")
-            # 構造發送給 GPT 的訊息
-            messages = [{'role': 'user', 'content': f'你是個國文老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
-            # 調用 GPT API 生成解答
-            self.gpt_35_api_stream(messages)
-        else:
-            self.answer_label.setText("請輸入一個問題。")
-
-    def go_back(self): #回到選擇科目的地方
-        self.main_window.stacked_widget.setCurrentIndex(2)
 
 # 自訂第三頁的視窗
 class CustomPage(QWidget):
@@ -197,7 +100,7 @@ class CustomPage(QWidget):
         super().__init__(parent)
         self.setWindowTitle('Solving Interface')
         self.setGeometry(100, 100, 1024, 768)
-        
+
         width = self.width()
         height = self.height()
         # 創建背景標籤
@@ -205,7 +108,7 @@ class CustomPage(QWidget):
         self.background_label.setGeometry(0, 0, self.width(), self.height())
 
         # 呼叫設定背景圖片函數
-        self.set_background_image('Raspberry/image/3.jpg')
+        self.set_background_image('image/3.jpg')
 
         # 創建按鈕
         self.create_buttons()
@@ -254,18 +157,121 @@ class CustomPage(QWidget):
         self.button5 = QPushButton(' ', self)
 
 
+
+class EnglishPage(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        # 設定佈局
+        self.setWindowTitle('English Practice')
+        self.setGeometry(100, 100, 1024, 768)
+        width = self.width()
+        height = self.height()
+        
+        # 加載背景圖片
+        self.background_label = QLabel(self)
+        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.set_background_image('image/5.jpg')
+
+        # 創建輸入框
+        self.input_field = QLineEdit(self)
+        self.input_field.setGeometry(int(width*0.078125), int(height*0.282542), int(width*0.3125), int(height*0.2018163))
+        self.input_field.setStyleSheet("""
+            background-color: rgba(255, 255, 255, 0);  /* 設置完全透明 */
+            border: none;  /* 移除邊框 */
+            color: black;  /* 設置文字顏色 */
+            font-size: 24px;
+            padding: 10px;
+        """)
+        self.input_field.setPlaceholderText("輸入英文")
+
+        # 創建透明播放按鈕
+        self.play_button = QPushButton('', self)
+        self.play_button.setGeometry(int(width*0.423), int(height*0.676084), int(width*0.041666), int(height*0.0807265))
+        self.play_button.clicked.connect(self.play_audio)
+
+        # 創建翻譯按鈕
+        self.translate_button = QPushButton('翻譯成中文', self)
+        self.translate_button.setGeometry(int(width*0.423), int(height*0.776084), int(width*0.1), int(height*0.05))
+        self.translate_button.clicked.connect(self.translate_text)
+
+        # 顯示翻譯結果的標籤
+        self.translation_label = QLabel(self)
+        self.translation_label.setGeometry(1000, int(height*0.282542), int(width*0.1), int(height*0.05))
+        self.translation_label.setStyleSheet("""
+            color: black;
+            font-size: 24px;
+        """)
+
+        # 創建返回按鈕
+        self.back_button = QPushButton('', self)
+        self.back_button.setGeometry(0, 0, int(width*0.0625), int(height*0.0807265))
+
+    def set_background_image(self, image_path):
+        # 加載圖片並設置為背景
+        background_image = QPixmap(image_path)
+        if background_image.isNull():
+            print(f"圖片加載失敗：{image_path}")
+        else:
+            self.background_label.setPixmap(background_image)
+            self.background_label.setScaledContents(True)
+
+    def resizeEvent(self, event):
+        # 在窗口調整大小時，重新調整背景圖片大小
+        width = self.width()
+        height = self.height()
+        self.background_label.setGeometry(0, 0, width, height)
+        self.input_field.setGeometry(int(width*0.078125), int(height*0.282542), int(width*0.3125), int(height*0.2018163))
+        self.play_button.setGeometry(int(width*0.423), int(height*0.676084), int(width*0.041666), int(height*0.0807265))
+        self.translate_button.setGeometry(int(width*0.375), int(height*0.676084), 80,80)
+        self.back_button.setGeometry(0, 0, int(width*0.0625), int(height*0.0807265))
+        self.translation_label.setGeometry(1080, 350, int(width*0.1), int(height*0.05))
+    def play_audio(self):
+        # 撥放音頻的功能
+        text = self.input_field.text()
+        if text:
+            language = 'en'
+            tts = gTTS(text=text, lang=language, slow=False)
+            audio_fp = io.BytesIO()
+            tts.write_to_fp(audio_fp)
+            audio_fp.seek(0)
+            pygame.mixer.init()
+            pygame.mixer.music.load(audio_fp, 'mp3')
+            pygame.mixer.music.play()
+
+            # 防止程序退出，等待播放完成
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(10)
+
+    def translate_text(self):
+        # 翻譯功能
+        text = self.input_field.text()
+        if text:
+            translator = Translator(from_lang="english", to_lang="chinese")
+            translation = translator.translate(text)
+            self.translation_label.setText(f"{translation}")
+        else:
+            self.translation_label.setText("請輸入英文文本")
+    
+
+
+
+
 class TemsolveMainWindow(QWidget):
     def __init__(self, main_window, parent=None):
         super().__init__(parent)
         # 設定主視窗
         self.setWindowTitle("Chat Window Example")
+        self.setAttribute(Qt.WA_TranslucentBackground, True)  # 設置整體透明
         self.showFullScreen()  # 設置為全螢幕
-        self.set_background_image('/Users/linchengyu/Desktop/temopp/113-1_interface_app_version-3.png')  # 設置全螢幕背景
+
+        # 設定背景圖片
+        self.background_image_path = 'image/3.jpg'
 
         # 主佈局
         main_layout = QVBoxLayout(self)
         
-        # 上方返回按鈕
+        # 上方返回按鈕 (透明)
         top_layout = QHBoxLayout()
         back_button = QPushButton("")
         back_button.setFixedSize(50, 50)
@@ -275,19 +281,20 @@ class TemsolveMainWindow(QWidget):
         main_layout.addLayout(top_layout)
 
         # 添加獨立的滾動區域
-        main_layout.addWidget(self.create_scroll_area())
+        self.scroll_area = self.create_scroll_area()
+        main_layout.addWidget(self.scroll_area)
 
         # 底部輸入區域
         input_layout = QHBoxLayout()
         
-        # 相機按鈕
-        camera_button = QPushButton("")
+        # 相機按鈕 (透明)
+        camera_button = QPushButton("相機")
         camera_button.setFixedSize(50, 50)
         camera_button.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
         input_layout.addWidget(camera_button)
 
-        # 輸入框
-        self.input_field = QLineEdit()
+        # 輸入框 (多行輸入)
+        self.input_field = QTextEdit()
         self.input_field.setFixedHeight(50)
         self.input_field.setStyleSheet("""
             border-radius: 25px;
@@ -295,55 +302,35 @@ class TemsolveMainWindow(QWidget):
             background-color: rgba(200, 200, 200, 0.5);
         """)
         self.input_field.setPlaceholderText("Type a message...")
-        self.input_field.returnPressed.connect(self.add_message)
+        self.input_field.setMaximumHeight(100)  # 設置最大高度
+        self.input_field.textChanged.connect(self.adjust_input_height)  # 根據文字調整高度
         input_layout.addWidget(self.input_field)
 
-        # 傳送按鈕
-        send_button = QPushButton("")
+        # 傳送按鈕 (透明)
+        send_button = QPushButton("傳送")
         send_button.setFixedSize(50, 50)
         send_button.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
+        send_button.clicked.connect(self.add_message)
         input_layout.addWidget(send_button)
 
         main_layout.addLayout(input_layout)
 
-    def set_background_image(self, image_path):
-        # 設置全螢幕背景圖片
-        self.setAutoFillBackground(True)
-        palette = QPalette()
-        background = QPixmap(image_path)
-        palette.setBrush(QPalette.Window, QBrush(background.scaled(self.screen().size(), Qt.IgnoreAspectRatio, Qt.SmoothTransformation)))
-        self.setPalette(palette)
+    def paintEvent(self, event):
+        # 使用 QPainter 繪製背景圖片
+        painter = QPainter(self)
+        pixmap = QPixmap(self.background_image_path)
+        painter.drawPixmap(self.rect(), pixmap)
 
     def create_scroll_area(self):
         # 建立滾動區域
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll_area.setStyleSheet("""
-            background-color: rgba(0, 255, 255, 0.5);  /* 半透明背景 */
-            QScrollBar:vertical {
-                border: none;
-                background: #f0f0f0;
-                width: 14px;
-                margin: 0px 0px 0px 0px;
-            }
-            QScrollBar::handle:vertical {
-                background: #a0a0a0;
-                min-height: 20px;
-                border-radius: 7px;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                background: none;
-                height: 0px;
-            }
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-                background: none;
-            }
-        """)
-
+        scroll_area.setStyleSheet("background-color: rgba(0, 0, 0, 0);")  # 透明背景
 
         # 聊天內容Widget
         self.chat_content = QWidget()
+        self.chat_content.setStyleSheet("background-color: rgba(0, 0, 0, 0);")  # 透明背景
         self.chat_layout = QVBoxLayout(self.chat_content)
         self.chat_layout.setContentsMargins(10, 10, 10, 10)
         self.chat_layout.setSpacing(10)
@@ -355,205 +342,14 @@ class TemsolveMainWindow(QWidget):
         scroll_area.setWidget(self.chat_content)
         return scroll_area
 
+    def adjust_input_height(self):
+        # 根據輸入文字的高度動態調整輸入框的高度
+        document_height = int(self.input_field.document().size().height())
+        self.input_field.setFixedHeight(min(document_height + 10, 100))  # 調整最大高度到 150
+            # 確保文字可以換行顯示
     def add_message(self):
         # 取得輸入的文字並清空輸入框
-        message = self.input_field.text()
-        self.input_field.clear()
-
-        if message:
-            # 用戶訊息
-            user_message_layout = QHBoxLayout()
-            user_message_layout.setAlignment(Qt.AlignRight)
-            
-            user_avatar = QLabel()
-            user_avatar.setPixmap(self.create_circle_avatar("Raspberry/image/0.jpg"))
-            user_avatar.setFixedSize(50, 50)
-            user_avatar.setScaledContents(True)
-            
-            user_message_label = QLabel(message)
-            user_message_label.setStyleSheet("""
-                background-color: #dcf8c6;
-                border-radius: 20px;
-                padding: 10px;
-                word-wrap: break-word;
-                max-width: 300px;
-            """)
-            user_message_label.setWordWrap(True)
-            user_message_layout.addWidget(user_message_label)
-            user_message_layout.addWidget(user_avatar)
-            self.chat_layout.addLayout(user_message_layout)
-
-            # 回應訊息
-            response_message_layout = QHBoxLayout()
-            response_message_layout.setAlignment(Qt.AlignLeft)
-            
-            bot_avatar = QLabel()
-            bot_avatar.setPixmap(self.create_circle_avatar("Raspberry/image/0.jpg"))
-            bot_avatar.setFixedSize(50, 50)
-            bot_avatar.setScaledContents(True)
-            
-            response_message_label = QLabel("This is a response message.")
-            response_message_label.setStyleSheet("""
-                background-color: #f1f0f0;
-                border-radius: 20px;
-                padding: 10px;
-                word-wrap: break-word;
-                max-width: 300px;
-            """)
-            response_message_label.setWordWrap(True)
-            response_message_layout.addWidget(bot_avatar)
-            response_message_layout.addWidget(response_message_label)
-            self.chat_layout.addLayout(response_message_layout)
-
-            # 自動滾動到底部
-            QTimer.singleShot(10, lambda: self.scroll_area.verticalScrollBar().setValue(self.scroll_area.verticalScrollBar().maximum()))
-
-    def create_circle_avatar(self, image_path):
-        # 生成圓形頭貼
-        pixmap = QPixmap(image_path)
-        size = min(pixmap.width(), pixmap.height())
-        pixmap = pixmap.scaled(size, size)
-        mask = pixmap.createMaskFromColor(Qt.transparent)
-        pixmap.setMask(mask)
-        return pixmap
-
-
-class solveMainWindow(QWidget):
-    def __init__(self, main_window, parent=None):
-        super().__init__()
-
-        # 設定主視窗
-        self.setWindowTitle("Chat Window Example")
-        self.resize(400, 600)
-
-        # 預設背景圖片路徑
-        self.background_image_path = '/Users/linchengyu/Downloads/account_sing_up_page.jpg'
-        self.set_background_image(self.background_image_path)
-
-        # 主佈局
-        main_layout = QVBoxLayout()
-
-        # 左上角箭頭按鈕
-        top_layout = QHBoxLayout()
-        back_button = QPushButton("")
-        back_button.setFixedSize(50, 50)  # 設定按鈕大小
-        back_button.setStyleSheet("""
-            background-color: rgba(0, 0, 0, 0);
-        """)
-        top_layout.addWidget(back_button)
-        top_layout.setAlignment(Qt.AlignLeft)  # 按鈕靠左對齊
-        main_layout.addLayout(top_layout)
-
-        # 滾動區域
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-
-        # 設定滑動條樣式為灰色且不透明
-        self.scroll_area.setStyleSheet("""
-            QScrollBar:vertical {
-                border: none;
-                background: #f0f0f0;  # 背景設置為灰色
-                width: 14px;  # 調整寬度
-                margin: 0px 0px 0px 0px;
-            }
-
-            QScrollBar::handle:vertical {
-                background: #a0a0a0;  # 設置滑動塊為較深的灰色
-                min-height: 20px;
-                border-radius: 7px;  # 圓角設置
-            }
-
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                background: none;
-                height: 0px;
-                subcontrol-position: none;
-                subcontrol-origin: margin;
-            }
-
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-                background: none;
-            }
-        """)
-
-        # 用來放對話內容的Widget
-        self.chat_content = QWidget()
-        self.chat_layout = QVBoxLayout(self.chat_content)
-
-        # 設置間距以確保頭貼不會被滑動條覆蓋
-        self.chat_layout.setContentsMargins(10, 10, 10, 10)  # 設置上下左右的間距
-        self.chat_layout.setSpacing(10)  # 設置控件之間的間隔
-
-        # 添加一個空間物件到最上方
-        self.spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.chat_layout.addItem(self.spacer)
-
-        # 初始不滾動，隨著對話新增
-        self.scroll_area.setWidget(self.chat_content)
-        main_layout.addWidget(self.scroll_area)
-
-        # 建立輸入區域
-        input_layout = QHBoxLayout()
-
-        # 左下角相機按鈕
-        camera_button = QPushButton("")
-        camera_button.setFixedSize(50, 50)
-        camera_button.setStyleSheet("""
-            background-color: rgba(0, 0, 0, 0);
-        """)
-        input_layout.addWidget(camera_button)
-
-        # 輸入框
-        self.input_field = QLineEdit()
-        self.input_field.setFixedHeight(50)
-        self.input_field.setStyleSheet("""
-            border-radius: 25px;
-            padding-left: 10px;
-            background-color: rgba(200, 200, 200, 0.5);
-        """)
-        self.input_field.setPlaceholderText("Type a message...")
-        self.input_field.returnPressed.connect(self.add_message)
-        input_layout.addWidget(self.input_field)
-
-        # 右下角傳送按鈕
-        send_button = QPushButton("")
-        send_button.setFixedSize(50, 50)
-        send_button.setStyleSheet("""
-            background-color: rgba(0, 0, 0, 0);
-        """)
-        input_layout.addWidget(send_button)
-
-        main_layout.addLayout(input_layout)  # 添加輸入區域的佈局
-        self.setLayout(main_layout)  # 將主佈局設置為主Widget的佈局
-
-    def set_background_image(self, image_path):
-        # 載入圖片
-        self.background_image = QPixmap(image_path)
-        if self.background_image.isNull():
-            print(f"圖片未加載成功，請確認路徑：{image_path}")
-            return  # 如果加載失敗，退出函數
-
-        # 設置背景圖片
-        self.update_background()
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)  # 確保父類別的resizeEvent被呼叫
-        self.update_background()  # 重新更新背景圖片
-
-    def update_background(self):
-        # 設置背景圖片
-        self.setAutoFillBackground(True)
-        palette = QPalette()
-        scaled_background = self.background_image.scaled(self.size(), Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
-        palette.setBrush(QPalette.Window, QBrush(scaled_background))
-        self.setPalette(palette)
-
-        # 確保內部控件不覆蓋背景（使它們背景透明）
-        self.setAutoFillBackground(False)
-
-    def add_message(self):
-        # 取得輸入的文字並清空輸入框
-        message = self.input_field.text()
+        message = self.input_field.toPlainText()
         self.input_field.clear()
 
         if message:
@@ -563,7 +359,7 @@ class solveMainWindow(QWidget):
 
             # 頭貼部分
             user_avatar = QLabel()
-            user_avatar.setPixmap(self.create_circle_avatar("/Users/linchengyu/Downloads/account_sing_up_page.jpg"))  # 用戶頭貼
+            user_avatar.setPixmap(self.create_circle_avatar("image/0.jpg"))  # 用戶頭貼
             user_avatar.setFixedSize(50, 50)  # 設定頭貼大小
             user_avatar.setScaledContents(True)  # 圖片自動縮放
 
@@ -589,7 +385,7 @@ class solveMainWindow(QWidget):
 
             # 頭貼部分
             bot_avatar = QLabel()
-            bot_avatar.setPixmap(self.create_circle_avatar("/Users/linchengyu/Downloads/account_sing_up_page.jpg"))  # 機器人頭貼
+            bot_avatar.setPixmap(self.create_circle_avatar("Raspberry/image/0.jpg"))  # 機器人頭貼
             bot_avatar.setFixedSize(50, 50)  # 設定頭貼大小
             bot_avatar.setScaledContents(True)  # 圖片自動縮放
 
@@ -612,91 +408,44 @@ class solveMainWindow(QWidget):
             # 滾動條位置設定
             QTimer.singleShot(10, lambda: self.scroll_area.verticalScrollBar().setValue(self.scroll_area.verticalScrollBar().maximum()))
 
+    def gpt_35_api_stream(self, messages: list): #GPT 輸出
+        try:
+            stream = client.chat.completions.create(
+                model='gpt-3.5-turbo',
+                messages=messages,
+                stream=True,
+            )
+            full_response = ""
+            for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    full_response  += chunk.choices[0].delta.content #輸出
+            self.answer_label.setText(full_response ) 
+        except Exception as e:
+            self.answer_label.setText(f"發生錯誤: {e}")
+
+    def solve_problem(self):
+        # 取得輸入的問題
+        question = self.input_field.text()
+        if question:
+            # 清空標籤並顯示等待訊息
+            self.answer_label.setText(f"正在為「{question}」生成解答...")
+            # 構造發送給 GPT 的訊息
+            messages = [{'role': 'user', 'content': f'你是個國文老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            # 調用 GPT API 生成解答
+            self.gpt_35_api_stream(messages)
+        else:
+            self.answer_label.setText("請輸入一個問題。")
+
     def create_circle_avatar(self, image_path):
         # 生成圓形頭貼
         pixmap = QPixmap(image_path)
         size = min(pixmap.width(), pixmap.height())
-        pixmap = pixmap.scaled(size, size)  # 縮放圖片以便於裁切
-        mask = pixmap.createMaskFromColor(Qt.transparent)  # 生成透明遮罩
-        pixmap.setMask(mask)  # 設置遮罩
+        pixmap = pixmap.scaled(size, size)
+        mask = pixmap.createMaskFromColor(Qt.transparent)
+        pixmap.setMask(mask)
         return pixmap
 
-
-class EnglishPage(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        # 設定佈局
-        self.setWindowTitle('English Practice')
-        self.setGeometry(100, 100, 1024, 768)
-        width = self.width()
-        height = self.height()
-         # 加載背景圖片
-        self.background_label = QLabel(self)
-        self.background_label.setGeometry(0, 0, self.width(), self.height())
-        self.set_background_image('Raspberry/image/5.jpg')  # Adjust the path based on where the file is saved
-        #創建輸入框
-        self.input_field = QLineEdit(self)
-        self.input_field.setGeometry(int(width*0.078125), int(height*0.282542), int(width*0.3125), int(height*0.2018163))
-        self.input_field.setStyleSheet("""
-            background-color: rgba(255, 255, 255, 0);  /* 設置完全透明 */
-            border: none;  /* 移除邊框 */
-            color: black;  /* 設置文字顏色 */
-            font-size: 24px;
-            padding: 10px;
-        """)
-
-        self.input_field.setPlaceholderText("輸入英文")
-
-        # 創建透明撥放按鈕
-        self.play_button = QPushButton('', self)
-        self.play_button.setGeometry(int(width*0.423), int(height*0.676084), int(width*0.041666), int(height*0.0807265))  # Adjust the size and position
-        #self.play_button.setStyleSheet('background-color: transparent; border: none;')
-        self.play_button.clicked.connect(self.play_audio)
-
-        # 創建返回按鈕
-        self.back_button = QPushButton('', self)
-        self.back_button.setGeometry(0, 0, int(width*0.0625), int(height*0.0807265))
-        #self.back_button.setStyleSheet('background-color: transparent; font-size: 18px;')
-
-
-    def set_background_image(self, image_path):
-        # 加載圖片並設置為背景
-        background_image = QPixmap(image_path)
-        if background_image.isNull():
-            print(f"圖片加載失敗：{image_path}")
-        else:
-            self.background_label.setPixmap(background_image)
-            self.background_label.setScaledContents(True)
-
-    def resizeEvent(self, event):
-         # 在窗口調整大小時，重新調整背景圖片大小
-        width = self.width()
-        height = self.height()
-        self.background_label.setGeometry(0, 0, width, height)
-        self.input_field.setGeometry(int(width*0.078125), int(height*0.282542), int(width*0.3125), int(height*0.2018163))
-        self.play_button.setGeometry(int(width*0.423), int(height*0.676084), int(width*0.041666), int(height*0.0807265))
-        self.back_button.setGeometry(0,0,int(width*0.0625), int(height*0.0807265))
-
-    def play_audio(self):
-         # 撥放音頻的功能（目前是占位符）
-        text = self.input_field.text()
-        if text:  # 確保輸入框不為空
-            language = 'en'
-            tts = gTTS(text=text, lang=language, slow=False)
-            audio_fp = io.BytesIO()
-            tts.write_to_fp(audio_fp)
-            audio_fp.seek(0)
-            # 初始化 pygame 並播放音頻
-            pygame.mixer.init()
-            pygame.mixer.music.load(audio_fp, 'mp3')
-            pygame.mixer.music.play()
-
-            # 防止程序退出，等待播放完成
-            while pygame.mixer.music.get_busy():
-                pygame.time.Clock().tick(10)
     
- 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -708,7 +457,7 @@ class MainWindow(QMainWindow):
         
         # 第一頁
         self.page1 = QLabel(self)
-        pixmap1 = QPixmap('Raspberry/image/1.jpg')  # 替換為你的第一張圖片
+        pixmap1 = QPixmap('image/1.jpg')  # 替換為你的第一張圖片
         self.page1.setPixmap(pixmap1)
         self.page1.setScaledContents(True)
         self.stacked_widget.addWidget(self.page1)
@@ -717,7 +466,7 @@ class MainWindow(QMainWindow):
 
         # 第二頁 (選大類別頁面)
         self.page2 = QLabel(self)
-        pixmap2 = QPixmap('Raspberry/image/2.jpg')  # 替換為你的第二張圖片
+        pixmap2 = QPixmap('image/2.jpg')  # 替換為你的第二張圖片
         self.page2.setPixmap(pixmap2)
         self.page2.setScaledContents(True)
         self.stacked_widget.addWidget(self.page2)
@@ -730,7 +479,7 @@ class MainWindow(QMainWindow):
 
         # 第四頁（讀書會與聊聊）
         self.page4 = QLabel(self)
-        pixmap4 = QPixmap('Raspberry/image/7.jpg')
+        pixmap4 = QPixmap('image/7.jpg')
         self.page4.setPixmap(pixmap4)
         self.page4.setScaledContents(True)
         self.stacked_widget.addWidget(self.page4)
@@ -745,13 +494,14 @@ class MainWindow(QMainWindow):
 
         # 第六頁 (統計頁面)
         self.page6 = QLabel(self)
-        pixmap6 = QPixmap('Raspberry/image/Statistics.jpg')
+        pixmap6 = QPixmap('image/Statistics.jpg')
         self.page6.setPixmap(pixmap6)
         self.page6.setScaledContents(True)
         self.stacked_widget.addWidget(self.page6)
         self.button_chat_page6 = None
         self.button_study_club_page6 = None
         self.page6_back_btn = None
+
         # 國文解題頁面
         self.problem_solving_page = TemsolveMainWindow(self)
         self.stacked_widget.addWidget(self.problem_solving_page)
@@ -759,14 +509,14 @@ class MainWindow(QMainWindow):
 
         #註冊介面
         self.signup_page = QLabel(self)
-        pixmapsignup = QPixmap('Raspberry/image/account_sing_up_page.jpg')
+        pixmapsignup = QPixmap('image/account_sing_up_page.jpg')
         self.signup_page.setPixmap(pixmapsignup)
         self.signup_page.setScaledContents(True)
         self.stacked_widget.addWidget(self.signup_page)
         self.createSignupPage()
         #登入介面
         self.signin_page = QLabel(self)
-        pixmapsignin = QPixmap('Raspberry/image/account_sing_in_page.jpg')
+        pixmapsignin = QPixmap('image/account_sing_in_page.jpg')
         self.signin_page.setPixmap(pixmapsignin)
         self.signin_page.setScaledContents(True) # 這裡你可以自訂頁面的內容
         self.stacked_widget.addWidget(self.signin_page)
@@ -889,10 +639,10 @@ class MainWindow(QMainWindow):
 
     # 登入頁面設置
     def createSigninPage(self):
-        self.signin_account = QLineEdit(self.signin_page)
-        self.signin_account.setPlaceholderText("請輸入用戶名")
-        self.signin_account.setGeometry(800, 245, 400, 80) 
-        self.signin_account.setStyleSheet("background: rgba(255, 255, 255, 0.3); border: none; color:black;font-size: 23px;")
+        self.signin_acount = QLineEdit(self.signin_page)
+        self.signin_acount.setPlaceholderText("請輸入用戶名")
+        self.signin_acount.setGeometry(800, 245, 400, 80) 
+        self.signin_acount.setStyleSheet("background: rgba(255, 255, 255, 0.3); border: none; color:black;font-size: 23px;")
 
         self.signin_password = QLineEdit(self.signin_page)
         self.signin_password.setPlaceholderText("請輸入密碼")
@@ -909,31 +659,28 @@ class MainWindow(QMainWindow):
 
         self.signin_button.clicked.connect(self.handleSignin)
 
-   # 註冊邏輯
+    # 處理註冊按鈕點擊事件
     def handleSignup(self):
         username = self.signup_username.text()
-        account = self.signup_account.text()
         password = self.signup_password.text()
+        password_confirm = self.signup_password_confirm.text()
 
-        # 調用資料庫註冊功能
-        if register_and_login(username, account, password):
-            print("註冊並登入成功")
-            self.stacked_widget.setCurrentIndex(0)  # 回到首頁或進入應用
+        if password == password_confirm:
+            # 在這裡處理註冊邏輯 (例如將資料保存到數據庫)
+            print(f"註冊成功！用戶名: {username}")
         else:
-            print("註冊失敗，帳號已存在。")
+            print("密碼不匹配，請重新輸入。")
 
-    # 登入邏輯
+    # 處理登入按鈕點擊事件
     def handleSignin(self):
-        account = self.signin_account.text()
+        account = self.signin_acount.text()
         password = self.signin_password.text()
 
-        # 調用資料庫登入檢查功能
-        if login_check(account, password):
-            print("登入成功")
-            self.stacked_widget.setCurrentIndex(0)  # 回到首頁或進入應用
+        # 在這裡處理登入邏輯 (例如驗證用戶名和密碼)
+        if account == "test" and password == "1234":  # 這裡只是示範，你應該連接真實數據庫
+            print("登入成功！")
         else:
-            print("登入失敗，帳號或密碼錯誤。")
-
+            print("登入失敗，用戶名或密碼錯誤。")
 
     def showPage(self, button_id):
         if button_id == 1:
