@@ -438,27 +438,41 @@ class AnalysisPage(QWidget):
 
         # 設置佈局來防止其他部件影響背景
         self.setLayout(QVBoxLayout())
-        # 創建返回按鈕 這她媽沒用阿 耖你媽
+
+        # 創建返回按鈕
         self.back_button = QPushButton('', self)
         self.back_button.setGeometry(
-            0, 0, int(width*0.0625), int(height*0.0807265))
+            0, 0, int(width * 0.0625), int(height * 0.0807265))
+
         # 分析國文
         self.chinese_button = QPushButton('國文', self)
         self.chinese_button.setGeometry(500, 600, 120, 60)  # 設定按鈕的位置和大小
         self.chinese_button.clicked.connect(
-            self.go_to_chinese_analysis_page)  # 設定點擊事件
+            lambda: self.show_analysis_page(self.main_window.chinese_analysis_page))  # 設定點擊事件
+
         # 分析英文
-        self.example_button = QPushButton('英文', self)
-        self.example_button.setGeometry(700, 1200, 120, 60)  # 設定按鈕的位置和大小
+        self.english_button = QPushButton('英文', self)
+        self.english_button.setGeometry(700, 600, 120, 60)  # 設定按鈕的位置和大小
+        self.english_button.clicked.connect(
+            lambda: self.show_analysis_page(self.main_window.english_analysis_page))  # 設定點擊事件
+
         # 分析數學
-        self.example_button = QPushButton('數學', self)
-        self.example_button.setGeometry(900, 1200, 120, 60)  # 設定按鈕的位置和大小
+        self.math_button = QPushButton('數學', self)
+        self.math_button.setGeometry(900, 600, 120, 60)  # 設定按鈕的位置和大小
+        self.math_button.clicked.connect(
+            lambda: self.show_analysis_page(self.main_window.math_analysis_page))  # 設定點擊事件
+
         # 分析自然
-        self.example_button = QPushButton('自然', self)
-        self.example_button.setGeometry(1100, 1200, 120, 60)  # 設定按鈕的位置和大小
+        self.science_button = QPushButton('自然', self)
+        self.science_button.setGeometry(1100, 600, 120, 60)  # 設定按鈕的位置和大小
+        self.science_button.clicked.connect(
+            lambda: self.show_analysis_page(self.main_window.science_analysis_page))  # 設定點擊事件
+
         # 分析社會
-        self.example_button = QPushButton('社會', self)
-        self.example_button.setGeometry(1300, 1200, 120, 60)  # 設定按鈕的位置和大小
+        self.social_button = QPushButton('社會', self)
+        self.social_button.setGeometry(1300, 600, 120, 60)  # 設定按鈕的位置和大小
+        self.social_button.clicked.connect(
+            lambda: self.show_analysis_page(self.main_window.social_analysis_page))  # 設定點擊事件
 
     def set_background_image(self, image_path):
         # 加載背景圖片
@@ -474,31 +488,27 @@ class AnalysisPage(QWidget):
         # 調整背景大小以適應窗口調整
         self.background_label.setGeometry(0, 0, self.width(), self.height())
 
-    def go_to_chinese_analysis_page(self):
-        global gpt_data
-        user = login_check(msg, pwd)
-        gpt_data = find_gpt(user.uID)
-        print(gpt_data)
-
-        if self.main_window and hasattr(self.main_window, 'show_chinese_analysis_page'):
-            # 更新表格資料
-            self.main_window.chinese_analysis_page.update_table()
-            # 通知主視窗進行頁面切換
-            self.main_window.show_chinese_analysis_page()
+    def show_analysis_page(self, page):
+        # 切換到指定的分析頁面
+        if self.main_window:
+            self.main_window.show_analysis_page(page)
         else:
-            print("父窗口沒有方法 show_chinese_analysis_page")
+            print("主視窗未正確設置")
 
-# 美編國文分析葉面啦幹您娘
-class ChineseAnalysisPage(QWidget):
-    def __init__(self, parent=None):
+class SubjectAnalysisPage(QWidget):
+    def __init__(self, subject, parent=None):
         super().__init__(parent)
-        self.setWindowTitle('國文分析')
+        self.subject = subject
+        self.setWindowTitle(f'{subject} 分析')
         self.setGeometry(100, 100, 1024, 768)
+
+        # 設定背景圖片路徑
+        background_image_path = f'image/{subject}.jpg'
 
         # 創建背景標籤
         self.background_label = QLabel(self)
         self.background_label.setGeometry(0, 0, self.width(), self.height())
-        self.set_background_image('image/9.png')
+        self.set_background_image(background_image_path)
 
         # 設置主佈局
         main_layout = QVBoxLayout(self)
@@ -581,31 +591,31 @@ class ChineseAnalysisPage(QWidget):
         height = self.height() * 0.6  # 設置表格高度為視窗的60%
         self.table_widget.setFixedSize(QSize(int(width), int(height)))
     def update_table(self):
-        # 更新表格資料
         global gpt_data
-        self.table_widget.setRowCount(len(gpt_data))  # 根據 gpt_data 長度設置行數
+        filtered_data = [item for item in gpt_data if item.subject == self.subject]
+        self.table_widget.setRowCount(len(filtered_data))  # 根據篩選後的資料設置行數
 
-        # 將 gpt_data 的內容填充到表格中
-        for row, gpt_item in enumerate(gpt_data):
-            # 查詢 gpt_id 的訊息內容
+            # 將篩選後的內容填充到表格中
+        for row, gpt_item in enumerate(filtered_data):
+                # 查詢 gpt_id 的訊息內容
             messages = find_gpt_message(gpt_item.Gpt_ID)
-            
-            # 初始化 sender 0 和 sender 1 的訊息
+                
+                # 初始化 sender 0 和 sender 1 的訊息
             sender0_message = "無訊息"
             sender1_message = "無訊息"
 
-            # 分類 sender 0 和 sender 1 的訊息
+                # 分類 sender 0 和 sender 1 的訊息
             for msg in messages:
                 if msg.sender == 0:
                     sender0_message = msg.message
                 elif msg.sender == 1:
                     sender1_message = msg.message
 
-            # 設定表格顯示
+                # 設定表格顯示
             self.table_widget.setItem(row, 0, QTableWidgetItem(sender0_message))  # 第一列顯示 sender 0 的訊息
             self.table_widget.setItem(row, 1, QTableWidgetItem(sender1_message))  # 第二列顯示 sender 1 的訊息
 
-            # 將日期轉換為字串格式
+                # 將日期轉換為字串格式
             if isinstance(gpt_item.day, date):
                 date_str = gpt_item.day.strftime("%Y-%m-%d")
             else:
@@ -634,6 +644,8 @@ class TemsolveMainWindow(QWidget):
         else:
             self.background_image_path = 'image/social.jpg'
             
+        
+
         # 主佈局
         main_layout = QVBoxLayout(self)
         # 上方返回按鈕 (透明)
@@ -687,7 +699,7 @@ class TemsolveMainWindow(QWidget):
         painter = QPainter(self)
         pixmap = QPixmap(self.background_image_path)
         painter.drawPixmap(self.rect(), pixmap)
-
+    
     def create_scroll_area(self):
         # 建立滾動區域
         scroll_area = QScrollArea()
@@ -848,7 +860,6 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('介面應用')
-
         # Stack Widget 用來管理多個頁面
         self.stacked_widget = QStackedWidget(self)
         self.setCentralWidget(self.stacked_widget)
@@ -904,10 +915,24 @@ class MainWindow(QMainWindow):
         self.analysis_page = AnalysisPage(self)
         self.stacked_widget.addWidget(self.analysis_page)
 
-        # 替換 為新的 ChineseAnalysisPage
-        self.chinese_analysis_page = ChineseAnalysisPage(self)
-        self.stacked_widget.addWidget(self.chinese_analysis_page)
+         # 初始化各個分析頁面
+        self.chinese_analysis_page = SubjectAnalysisPage("國文", self)
+        self.math_analysis_page = SubjectAnalysisPage("數學", self)
+        self.english_analysis_page = SubjectAnalysisPage("英文", self)
+        self.science_analysis_page = SubjectAnalysisPage("自然", self)
+        self.social_analysis_page = SubjectAnalysisPage("社會", self)
 
+        # 將頁面添加到 QStackedWidget 中
+        self.stacked_widget.addWidget(self.chinese_analysis_page)
+        self.stacked_widget.addWidget(self.math_analysis_page)
+        self.stacked_widget.addWidget(self.english_analysis_page)
+        self.stacked_widget.addWidget(self.science_analysis_page)
+        self.stacked_widget.addWidget(self.social_analysis_page)
+
+        # 設置主頁
+        self.analysis_page = AnalysisPage(self)
+        self.stacked_widget.addWidget(self.analysis_page)
+        
         # 國文解題頁面
         self.chinese_problem_solving_page = TemsolveMainWindow(self, "國文")
         self.stacked_widget.addWidget(self.chinese_problem_solving_page)
@@ -953,7 +978,8 @@ class MainWindow(QMainWindow):
         self.signin_page.setScaledContents(True)  # 這裡你可以自訂頁面的內容
         self.stacked_widget.addWidget(self.signin_page)
         self.createSigninPage()
-
+    def show_analysis_page(self, page):
+        self.stacked_widget.setCurrentWidget(page)
     # 創建按鈕 (第一頁)
     def create_buttons_page1(self):
         width = self.width()
@@ -1058,7 +1084,11 @@ class MainWindow(QMainWindow):
     def goToAnalysisPage(self):
         # 切換到分析頁面
         self.stacked_widget.setCurrentWidget(self.analysis_page)
-
+    def show_analysis_page(self, page):
+        # 切換到指定的分析頁面
+        self.stacked_widget.setCurrentWidget(page)
+        page.update_table()  # 切換到頁面時更新表格
+        
     def createSignupPage(self):
         self.signup_username = QLineEdit(self.signup_page)
         self.signup_username.setPlaceholderText("請輸入用戶名")
@@ -1164,6 +1194,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentIndex(1)
 
     def showProblemSolvingPage_chinese(self):
+        # 切換到國文解題頁面
         self.stacked_widget.setCurrentWidget(self.chinese_problem_solving_page)
 
     def showProblemSolvingPage_math(self):
@@ -1189,9 +1220,6 @@ class MainWindow(QMainWindow):
     # 顯示 Sign-in 頁面
     def showSigninPage(self):
         self.stacked_widget.setCurrentWidget(self.signin_page)
-
-    def show_chinese_analysis_page(self):
-        self.stacked_widget.setCurrentWidget(self.chinese_analysis_page)
 
 
 if __name__ == '__main__':
