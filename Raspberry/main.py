@@ -197,7 +197,7 @@ class CustomPage(QWidget):
         self.background_label.setGeometry(0, 0, self.width(), self.height())
 
         # 呼叫設定背景圖片函數
-        self.set_background_image('Raspberry/image/3.jpg')
+        self.set_background_image('image/3.jpg')
 
         # 創建按鈕
         self.create_buttons()
@@ -258,7 +258,7 @@ class EnglishPage(QWidget):
         # 加載背景圖片
         self.background_label = QLabel(self)
         self.background_label.setGeometry(0, 0, self.width(), self.height())
-        self.set_background_image('Raspberry/image/5.jpg')
+        self.set_background_image('image/5.jpg')
 
         # 創建輸入框
         self.input_field = QLineEdit(self)
@@ -501,15 +501,15 @@ class TemsolveMainWindow(QWidget):
         
         # 設定背景圖片
         if(objects=="chinese"):
-            self.background_image_path = 'Raspberry/image/chinese.jpg'
+            self.background_image_path = 'image/chinese.jpg'
         elif(objects=="math"):
-            self.background_image_path = 'Raspberry/image/math.jpg'
+            self.background_image_path = 'image/math.jpg'
         elif(objects=="science"):
-            self.background_image_path = 'Raspberry/image/science.jpg'
+            self.background_image_path = 'image/science.jpg'
         elif(objects=="english"):
-            self.background_image_path = 'Raspberry/image/english.jpg'
+            self.background_image_path = 'image/english.jpg'
         else:
-            self.background_image_path = 'Raspberry/image/social.jpg'
+            self.background_image_path = 'image/social.jpg'
 
 
         # 主佈局
@@ -555,7 +555,8 @@ class TemsolveMainWindow(QWidget):
         send_button = QPushButton("傳送")
         send_button.setFixedSize(50, 50)
         send_button.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
-        send_button.clicked.connect(self.add_message)
+        #send_button.clicked.connect(self.add_message(objects))
+        send_button.clicked.connect(lambda: self.add_message(self,objects))
         input_layout.addWidget(send_button)
 
         main_layout.addLayout(input_layout)
@@ -592,7 +593,7 @@ class TemsolveMainWindow(QWidget):
         document_height = int(self.input_field.document().size().height())
         self.input_field.setFixedHeight(min(document_height + 10, 100))  # 調整最大高度到 150
             # 確保文字可以換行顯示
-    def add_message(self, response):
+    def add_message(self,objects, response):
         # 取得輸入的文字並清空輸入框
         message = self.input_field.toPlainText()
         #把使用者輸入的問題傳進對話框
@@ -641,7 +642,7 @@ class TemsolveMainWindow(QWidget):
             bot_avatar.setPixmap(self.create_circle_avatar("image/0.jpg"))  # 機器人頭貼
             bot_avatar.setFixedSize(50, 50)  # 設定頭貼大小
             bot_avatar.setScaledContents(True)  # 圖片自動縮放
-            response=self.solve_problem(message)
+            response=self.solve_problem(message,objects)
 
             current_date = datetime.now()
             date_str = current_date.strftime("%Y-%m-%d")
@@ -686,10 +687,21 @@ class TemsolveMainWindow(QWidget):
         except Exception as e:
             self.answer_label.setText(f"發生錯誤: {e}")
 
-    def solve_problem(self, question):
+    def solve_problem(self, question,objects):
         if question:
             # 構造發送給 GPT 的訊息
-            messages = [{'role': 'user', 'content': f'你是個國文老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            if(objects=="chinese"):
+                messages = [{'role': 'user', 'content': f'你是個國小和國中的國文老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            elif(objects=="math"):
+                messages = [{'role': 'user', 'content': f'你是個國小和國中的數學老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            elif(objects=="science"):
+                messages = [{'role': 'user', 'content': f'你是個國小和國中的自然老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            elif(objects=="english"):
+                messages = [{'role': 'user', 'content': f'你是個國小和國中的英文老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            else:
+                messages = [{'role': 'user', 'content': f'你是個國小和國中的社會老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            print(messages)
+            
             # 調用 GPT API 生成解答
             response = self.gpt_35_api_stream(messages)
             return response
@@ -716,7 +728,7 @@ class MainWindow(QMainWindow):
         
         # 第一頁
         self.page1 = QLabel(self)
-        pixmap1 = QPixmap('Raspberry/image/1.jpg')  # 替換為你的第一張圖片
+        pixmap1 = QPixmap('image/1.jpg')  # 替換為你的第一張圖片
         self.page1.setPixmap(pixmap1)
         self.page1.setScaledContents(True)
         self.stacked_widget.addWidget(self.page1)
@@ -725,7 +737,7 @@ class MainWindow(QMainWindow):
 
         # 第二頁 (選大類別頁面)
         self.page2 = QLabel(self)
-        pixmap2 = QPixmap('Raspberry/image/2.jpg')  # 替換為你的第二張圖片
+        pixmap2 = QPixmap('image/2.jpg')  # 替換為你的第二張圖片
         self.page2.setPixmap(pixmap2)
         self.page2.setScaledContents(True)
         self.stacked_widget.addWidget(self.page2)
@@ -738,7 +750,7 @@ class MainWindow(QMainWindow):
 
         # 第四頁（讀書會與聊聊）
         self.page4 = QLabel(self)
-        pixmap4 = QPixmap('Raspberry/image/7.jpg')
+        pixmap4 = QPixmap('image/7.jpg')
         self.page4.setPixmap(pixmap4)
         self.page4.setScaledContents(True)
         self.stacked_widget.addWidget(self.page4)
@@ -756,7 +768,7 @@ class MainWindow(QMainWindow):
 
         # 第六頁 (統計頁面)
         self.page6 = QLabel(self)
-        pixmap6 = QPixmap('Raspberry/image/Statistics.jpg')
+        pixmap6 = QPixmap('image/Statistics.jpg')
         self.page6.setPixmap(pixmap6)
         self.page6.setScaledContents(True)
         self.stacked_widget.addWidget(self.page6)
@@ -802,14 +814,14 @@ class MainWindow(QMainWindow):
 
         #註冊介面
         self.signup_page = QLabel(self)
-        pixmapsignup = QPixmap('Raspberry/image/account_sing_up_page.jpg')
+        pixmapsignup = QPixmap('image/account_sing_up_page.jpg')
         self.signup_page.setPixmap(pixmapsignup)
         self.signup_page.setScaledContents(True)
         self.stacked_widget.addWidget(self.signup_page)
         self.createSignupPage()
         #登入介面
         self.signin_page = QLabel(self)
-        pixmapsignin = QPixmap('Raspberry/image/account_sing_in_page.jpg')
+        pixmapsignin = QPixmap('image/account_sing_in_page.jpg')
         self.signin_page.setPixmap(pixmapsignin)
         self.signin_page.setScaledContents(True) # 這裡你可以自訂頁面的內容
         self.stacked_widget.addWidget(self.signin_page)
