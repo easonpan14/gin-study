@@ -557,7 +557,8 @@ class TemsolveMainWindow(QWidget):
         send_button = QPushButton("傳送")
         send_button.setFixedSize(50, 50)
         send_button.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
-        send_button.clicked.connect(self.add_message)
+        #send_button.clicked.connect(self.add_message(objects))
+        send_button.clicked.connect(lambda: self.add_message(self,objects))
         input_layout.addWidget(send_button)
 
         main_layout.addLayout(input_layout)
@@ -594,7 +595,7 @@ class TemsolveMainWindow(QWidget):
         document_height = int(self.input_field.document().size().height())
         self.input_field.setFixedHeight(min(document_height + 10, 100))  # 調整最大高度到 150
             # 確保文字可以換行顯示
-    def add_message(self, response):
+    def add_message(self,objects, response):
         # 取得輸入的文字並清空輸入框
         message = self.input_field.toPlainText()
         #把使用者輸入的問題傳進對話框
@@ -641,7 +642,7 @@ class TemsolveMainWindow(QWidget):
             bot_avatar.setPixmap(self.create_circle_avatar("image/0.jpg"))  # 機器人頭貼
             bot_avatar.setFixedSize(50, 50)  # 設定頭貼大小
             bot_avatar.setScaledContents(True)  # 圖片自動縮放
-            response=self.solve_problem(message)
+            response=self.solve_problem(message,objects)
 
             current_date = datetime.now()
             date_str = current_date.strftime("%Y-%m-%d")
@@ -686,10 +687,21 @@ class TemsolveMainWindow(QWidget):
         except Exception as e:
             self.answer_label.setText(f"發生錯誤: {e}")
 
-    def solve_problem(self, question):
+    def solve_problem(self, question,objects):
         if question:
             # 構造發送給 GPT 的訊息
-            messages = [{'role': 'user', 'content': f'你是個國文老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            if(objects=="chinese"):
+                messages = [{'role': 'user', 'content': f'你是個國小和國中的國文老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            elif(objects=="math"):
+                messages = [{'role': 'user', 'content': f'你是個國小和國中的數學老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            elif(objects=="science"):
+                messages = [{'role': 'user', 'content': f'你是個國小和國中的自然老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            elif(objects=="english"):
+                messages = [{'role': 'user', 'content': f'你是個國小和國中的英文老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            else:
+                messages = [{'role': 'user', 'content': f'你是個國小和國中的社會老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
+            print(messages)
+            
             # 調用 GPT API 生成解答
             response = self.gpt_35_api_stream(messages)
             return response
