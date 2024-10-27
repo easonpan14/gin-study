@@ -38,6 +38,8 @@ import pymysql
 msg=""
 pwd=""
 gpt_id=0
+current_date = datetime.now()
+date_str = current_date.strftime("%Y-%m-%d")
 client = OpenAI(
     # defaults to os.environ.get("OPENAI_API_KEY")
     api_key="sk-uJ3B62eXV4XouZSH7htWKYzf5QFj1W0WQd4AAn072WQPzptn",
@@ -197,7 +199,7 @@ class CustomPage(QWidget):
         self.background_label.setGeometry(0, 0, self.width(), self.height())
 
         # 呼叫設定背景圖片函數
-        self.set_background_image('Raspberry/image/3.jpg')
+        self.set_background_image('image/3.jpg')
 
         # 創建按鈕
         self.create_buttons()
@@ -258,7 +260,7 @@ class EnglishPage(QWidget):
         # 加載背景圖片
         self.background_label = QLabel(self)
         self.background_label.setGeometry(0, 0, self.width(), self.height())
-        self.set_background_image('Raspberry/image/5.jpg')
+        self.set_background_image('image/5.jpg')
 
         # 創建輸入框
         self.input_field = QLineEdit(self)
@@ -501,15 +503,15 @@ class TemsolveMainWindow(QWidget):
         
         # 設定背景圖片
         if(objects=="chinese"):
-            self.background_image_path = 'Raspberry/image/chinese.jpg'
+            self.background_image_path = 'image/chinese.jpg'
         elif(objects=="math"):
-            self.background_image_path = 'Raspberry/image/math.jpg'
+            self.background_image_path = 'image/math.jpg'
         elif(objects=="science"):
-            self.background_image_path = 'Raspberry/image/science.jpg'
+            self.background_image_path = 'image/science.jpg'
         elif(objects=="english"):
-            self.background_image_path = 'Raspberry/image/english.jpg'
+            self.background_image_path = 'image/english.jpg'
         else:
-            self.background_image_path = 'Raspberry/image/social.jpg'
+            self.background_image_path = 'image/social.jpg'
 
 
         # 主佈局
@@ -597,8 +599,6 @@ class TemsolveMainWindow(QWidget):
         message = self.input_field.toPlainText()
         #把使用者輸入的問題傳進對話框
         
-        current_date = datetime.now()
-        date_str = current_date.strftime("%Y-%m-%d")
         current_user = login_check(msg, pwd)  # 假設這是你登入的地方
         global gpt_id
         gpt_id = insert_gpt("國文", date_str, current_user.uID)
@@ -716,7 +716,7 @@ class MainWindow(QMainWindow):
         
         # 第一頁
         self.page1 = QLabel(self)
-        pixmap1 = QPixmap('Raspberry/image/1.jpg')  # 替換為你的第一張圖片
+        pixmap1 = QPixmap('image/1.jpg')  # 替換為你的第一張圖片
         self.page1.setPixmap(pixmap1)
         self.page1.setScaledContents(True)
         self.stacked_widget.addWidget(self.page1)
@@ -725,7 +725,7 @@ class MainWindow(QMainWindow):
 
         # 第二頁 (選大類別頁面)
         self.page2 = QLabel(self)
-        pixmap2 = QPixmap('Raspberry/image/2.jpg')  # 替換為你的第二張圖片
+        pixmap2 = QPixmap('image/2.jpg')  # 替換為你的第二張圖片
         self.page2.setPixmap(pixmap2)
         self.page2.setScaledContents(True)
         self.stacked_widget.addWidget(self.page2)
@@ -738,7 +738,7 @@ class MainWindow(QMainWindow):
 
         # 第四頁（讀書會與聊聊）
         self.page4 = QLabel(self)
-        pixmap4 = QPixmap('Raspberry/image/7.jpg')
+        pixmap4 = QPixmap('image/7.jpg')
         self.page4.setPixmap(pixmap4)
         self.page4.setScaledContents(True)
         self.stacked_widget.addWidget(self.page4)
@@ -756,7 +756,7 @@ class MainWindow(QMainWindow):
 
         # 第六頁 (統計頁面)
         self.page6 = QLabel(self)
-        pixmap6 = QPixmap('Raspberry/image/Statistics.jpg')
+        pixmap6 = QPixmap('image/Statistics.jpg')
         self.page6.setPixmap(pixmap6)
         self.page6.setScaledContents(True)
         self.stacked_widget.addWidget(self.page6)
@@ -802,14 +802,14 @@ class MainWindow(QMainWindow):
 
         #註冊介面
         self.signup_page = QLabel(self)
-        pixmapsignup = QPixmap('Raspberry/image/account_sing_up_page.jpg')
+        pixmapsignup = QPixmap('image/account_sing_up_page.jpg')
         self.signup_page.setPixmap(pixmapsignup)
         self.signup_page.setScaledContents(True)
         self.stacked_widget.addWidget(self.signup_page)
         self.createSignupPage()
         #登入介面
         self.signin_page = QLabel(self)
-        pixmapsignin = QPixmap('Raspberry/image/account_sing_in_page.jpg')
+        pixmapsignin = QPixmap('image/account_sing_in_page.jpg')
         self.signin_page.setPixmap(pixmapsignin)
         self.signin_page.setScaledContents(True) # 這裡你可以自訂頁面的內容
         self.stacked_widget.addWidget(self.signin_page)
