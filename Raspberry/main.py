@@ -258,7 +258,7 @@ class CustomPage(QWidget):
         self.background_label.setGeometry(0, 0, self.width(), self.height())
 
         # 呼叫設定背景圖片函數
-        self.set_background_image('image/3.jpg')
+        self.set_background_image('Raspberry/image/3.jpg')
 
         # 創建按鈕
         self.create_buttons()
@@ -326,7 +326,7 @@ class EnglishPage(QWidget):
         # 加載背景圖片
         self.background_label = QLabel(self)
         self.background_label.setGeometry(0, 0, self.width(), self.height())
-        self.set_background_image('image/5.jpg')
+        self.set_background_image('Raspberry/image/5.jpg')
 
         # 創建輸入框
         self.input_field = QLineEdit(self)
@@ -434,7 +434,7 @@ class AnalysisPage(QWidget):
         # 創建背景標籤
         self.background_label = QLabel(self)
         self.background_label.setGeometry(0, 0, self.width(), self.height())
-        self.set_background_image('image/8.png')
+        self.set_background_image('Raspberry/image/8.png')
 
         # 設置佈局來防止其他部件影響背景
         self.setLayout(QVBoxLayout())
@@ -473,6 +473,7 @@ class AnalysisPage(QWidget):
         self.social_button.setGeometry(1300, 600, 120, 60)  # 設定按鈕的位置和大小
         self.social_button.clicked.connect(
             lambda: self.show_analysis_page(self.main_window.social_analysis_page))  # 設定點擊事件
+        
 
     def set_background_image(self, image_path):
         # 加載背景圖片
@@ -503,7 +504,7 @@ class SubjectAnalysisPage(QWidget):
         self.setGeometry(100, 100, 1024, 768)
 
         # 設定背景圖片路徑
-        background_image_path = f'image/{subject}.jpg'
+        background_image_path = f'Raspberry/image/{subject}.jpg'
 
         # 創建背景標籤
         self.background_label = QLabel(self)
@@ -633,16 +634,18 @@ class TemsolveMainWindow(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground, True)  # 設置整體透明
         self.showFullScreen()  # 設置為全螢幕
         # 設定背景圖片
-        if (objects == "chinese"):
-            self.background_image_path = 'image/chinese.jpg'
-        elif (objects == "math"):
-            self.background_image_path = 'image/math.jpg'
-        elif (objects == "science"):
-            self.background_image_path = 'image/science.jpg'
-        elif (objects == "english"):
-            self.background_image_path = 'image/english.jpg'
+        if (objects == "國文"):
+            self.background_image_path = 'Raspberry/image/chinese.jpg'
+        elif (objects == "數學"):
+            self.background_image_path = 'Raspberry/image/math.jpg'
+        elif (objects == "自然"):
+            self.background_image_path = 'Raspberry/image/science.jpg'
+        elif (objects == "英文"):
+            self.background_image_path = 'Raspberry/image/english.jpg'
+        elif (objects == "社會"):
+            self.background_image_path = 'Raspberry/image/social.jpg'
         else:
-            self.background_image_path = 'image/social.jpg'
+            self.background_image_path = 'Raspberry/image/psychological.jpg'
             
         
 
@@ -840,7 +843,10 @@ class TemsolveMainWindow(QWidget):
             elif (objects == "社會"):
                 messages = [
                     {'role': 'user', 'content': f'你是個國小和國中的社會老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
-            print(messages)
+            elif (objects == "心理"):
+                messages = [
+                    {'role': 'user', 'content': f'你是個國小和國中的心理諮商老師，，會有學生來找你傾訴他的煩惱，請你給予他正確且安全的反饋和建議，請你勁量表現得像個人，可以是老師或朋友，麻煩用繁體中文，他想說的是「{question}」'}] 
+            #print(messages)
 
             # 調用 GPT API 生成解答
             response = self.gpt_35_api_stream(messages)
@@ -866,7 +872,7 @@ class MainWindow(QMainWindow):
 
         # 第一頁
         self.page1 = QLabel(self)
-        pixmap1 = QPixmap('image/1.jpg')  # 替換為你的第一張圖片
+        pixmap1 = QPixmap('Raspberry/image/1.jpg')  # 替換為你的第一張圖片
         self.page1.setPixmap(pixmap1)
         self.page1.setScaledContents(True)
         self.stacked_widget.addWidget(self.page1)
@@ -875,7 +881,7 @@ class MainWindow(QMainWindow):
 
         # 第二頁 (選大類別頁面)
         self.page2 = QLabel(self)
-        pixmap2 = QPixmap('image/2.jpg')  # 替換為你的第二張圖片
+        pixmap2 = QPixmap('Raspberry/image/2.jpg')  # 替換為你的第二張圖片
         self.page2.setPixmap(pixmap2)
         self.page2.setScaledContents(True)
         self.stacked_widget.addWidget(self.page2)
@@ -888,7 +894,7 @@ class MainWindow(QMainWindow):
 
         # 第四頁（讀書會與聊聊）
         self.page4 = QLabel(self)
-        pixmap4 = QPixmap('image/7.jpg')
+        pixmap4 = QPixmap('Raspberry/image/7.jpg')
         self.page4.setPixmap(pixmap4)
         self.page4.setScaledContents(True)
         self.stacked_widget.addWidget(self.page4)
@@ -903,7 +909,7 @@ class MainWindow(QMainWindow):
 
         # 第六頁 (統計頁面)
         self.page6 = QLabel(self)
-        pixmap6 = QPixmap('image/Statistics.jpg')
+        pixmap6 = QPixmap('Raspberry/image/Statistics.jpg')
         self.page6.setPixmap(pixmap6)
         self.page6.setScaledContents(True)
         self.stacked_widget.addWidget(self.page6)
@@ -963,17 +969,20 @@ class MainWindow(QMainWindow):
         self.page3.button5.clicked.connect(self.showProblemSolvingPage_social)
         self.social_problem_solving_page.back_button.clicked.connect(
             self.go_back)
+        
+        
+
 
         # 註冊介面
         self.signup_page = QLabel(self)
-        pixmapsignup = QPixmap('image/account_sing_up_page.jpg')
+        pixmapsignup = QPixmap('Raspberry/image/account_sing_up_page.jpg')
         self.signup_page.setPixmap(pixmapsignup)
         self.signup_page.setScaledContents(True)
         self.stacked_widget.addWidget(self.signup_page)
         self.createSignupPage()
         # 登入介面
         self.signin_page = QLabel(self)
-        pixmapsignin = QPixmap('image/account_sing_in_page.jpg')
+        pixmapsignin = QPixmap('Raspberry/image/account_sing_in_page.jpg')
         self.signin_page.setPixmap(pixmapsignin)
         self.signin_page.setScaledContents(True)  # 這裡你可以自訂頁面的內容
         self.stacked_widget.addWidget(self.signin_page)
@@ -1055,6 +1064,13 @@ class MainWindow(QMainWindow):
             self.page4_back_btn.clicked.connect(self.goBackToSecondPage)
         self.page4_back_btn.setGeometry(
             0, 0, int(width * 0.06), int(height * 0.074))
+        
+    #心理
+        self.psychological_problem_solving_page = TemsolveMainWindow(self, "心理")
+        self.stacked_widget.addWidget(self.psychological_problem_solving_page)
+        self.button_chat_page4.clicked.connect(self.showProblemSolvingPage_psychological)
+        self.psychological_problem_solving_page.back_button.clicked.connect(
+            self.go_back_to_studyclub)
 
     # 創建按鈕 (第六頁)
     def create_buttons_page6(self):
@@ -1208,11 +1224,14 @@ class MainWindow(QMainWindow):
 
     def showProblemSolvingPage_science(self):
         self.stacked_widget.setCurrentWidget(self.science_problem_solving_page)
+    
+    def showProblemSolvingPage_psychological(self):
+        self.stacked_widget.setCurrentWidget(self.psychological_problem_solving_page)
 
     def go_back(self):
-        # 返回到上一個頁面
-        # print("FFFFFFFFFFFFFFFFFFF")
         self.stacked_widget.setCurrentWidget(self.page3)
+    def go_back_to_studyclub(self):
+        self.stacked_widget.setCurrentWidget(self.page4)
 
     def showSignupPage(self):
         self.stacked_widget.setCurrentWidget(self.signup_page)
