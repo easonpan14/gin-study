@@ -43,6 +43,11 @@ class GptMessage:
         self.message = message
         self.sender=sender
 
+class FocusTime:
+    def __init__(self,uID:int,day:str,time:str):
+        self.uID=uID
+        self.day=day
+        self.time=time
 
 
 ################################################    about function    ################################################
@@ -67,9 +72,10 @@ def login_check(account:str, password:str)->User:
             result = cursor.fetchone()
             if result:
                 user = User(result[0], result[1])
-            return user  # 返回用戶信息
+              # 返回用戶信息
     finally:
         connection.close()
+    return user
 
 # 2. 註冊並檢查，返回 User 類，如果註冊失敗返回 User(0, "")
 def register_and_login(name:str, account:str, password:str)->User:
@@ -231,7 +237,7 @@ def join_group(group_ID: int, uID: int)->int:
         connection.close()
 
 # 9. 傳送群組訊息，返回訊息class GroupMessag，如果失敗返回 GroupMessage 包含任意ID <=0 表示失敗
-def send_group_message(group_ID:int, message:str, uID:int)->GroupMessage|int:
+def send_group_message(group_ID:int, message:str, uID:int)->GroupMessage:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -406,7 +412,67 @@ def find_gpt_message(GPT_ID:int) -> list[GptMessage]:
     finally:
         connection.close()
 
+# 16 插入FouseTime 
+def insert_focus_time(uID: int, day: str, time: str):
+    ''' 
+    day 格式: "YYYY-MM-DD" 、 time 格式: "hh:mm:ss"
+    '''
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            # 查詢是否有相同日期和uID的記錄
+            check_sql = """
+                SELECT time FROM focus_time 
+                WHERE uID = %s AND day = %s
+            """
+            cursor.execute(check_sql, (uID, day))
+            result = cursor.fetchone()  # 獲取一條匹配的記錄
 
+            if result:
+                # 累加時間：如果有記錄，更新time字段
+                existing_time = result[0]  # 當前已有的時間
+                update_sql = """
+                    UPDATE focus_time 
+                    SET time = SEC_TO_TIME(TIME_TO_SEC(time) + TIME_TO_SEC(%s)) 
+                    WHERE uID = %s AND day = %s
+                """
+                cursor.execute(update_sql, (time, uID, day))
+                print("已有記錄，累加時間成功")
+            else:
+                # 插入新記錄：如果沒有相同日期和uID的記錄
+                insert_sql = """
+                    INSERT INTO focus_time (uID, day, time) VALUES (%s, %s, %s)
+                """
+                cursor.execute(insert_sql, (uID, day, time))
+                print("插入新記錄成功")
+
+            # 提交事務
+            connection.commit()
+
+    except Exception as e:
+        print(f"操作失敗: {e}")
+        connection.rollback()
+
+    finally:
+        connection.close()
+# 17
+def find_fous_time(uID:int):
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            sql = """SELECT uID,day,time FROM Focus_time
+                    WHERE uID=%s"""
+            cursor.execute(sql, (uID,))
+            focus_times = cursor.fetchall()
+            focus_time = []
+            for data in focus_times:
+                focus_time.append(FocusTime(data[0],data[1],data[2]))  # 修正构造方式
+            return focus_time
+    except Exception as e:
+        print(f"Error: {e}")
+        return [GptMessage(-1, -1, "", 0)]  # 失败返回ID=-1
+    finally:
+        connection.close()
 
 
 
