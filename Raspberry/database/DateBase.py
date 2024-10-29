@@ -1,6 +1,7 @@
 import pymysql
 
 
+
 ################################################    about class    ################################################
 # 數據庫連接配置
 DB_CONFIG = {
@@ -232,7 +233,7 @@ def join_group(group_ID: int, uID: int)->int:
         connection.close()
 
 # 9. 傳送群組訊息，返回訊息class GroupMessag，如果失敗返回 GroupMessage 包含任意ID <=0 表示失敗
-def send_group_message(group_ID:int, message:str, uID:int)->GroupMessage|int:
+def send_group_message(group_ID:int, message:str, uID:int)->GroupMessage:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
