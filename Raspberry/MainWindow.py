@@ -1,19 +1,15 @@
 from PyQt5.QtWidgets import QMainWindow, QStackedWidget,QLabel,QPushButton,QLineEdit,QWidget
 from PyQt5.QtGui import QPixmap
-
-
 #自訂
 from Window.menu.CustomPage.CustomPage import CustomPage
 from Window.menu.StatisticsPage.AnalysisPage.SubjectAnalysisPage import SubjectAnalysisPage
 from Window.menu.CustomPage.TemsolveMainWindow import TemsolveMainWindow
 from Window.menu.StatisticsPage.AnalysisPage.AnalysisPage import AnalysisPage
 from Window.menu.EnglishPage.EnglishPage import EnglishPage
-from Window.menu.ClubPage.ClubTablePage import ClubTable
 from Window.menu.Focus.focus import FocusDetectionPage  # 導入專注偵測頁面
 from database.DateBase import register_and_login,login_check,find_gpt
 from GlobalVar import GlobalVar
 from Window.menu.StatisticsPage.AnalysisPage.FocusAnalysisPage import FocusAnalysisPage
-
 
 class MainWindow(QMainWindow):
     
@@ -72,16 +68,16 @@ class MainWindow(QMainWindow):
         self.addStackedWidget_updatePageIndexMap("統計",self.StatisticsPage)
         self.create_buttons_StatisticsPage()
 
- # 第七頁 (專注偵測)幹您娘
+         # 第七頁 (專注偵測)幹您娘
         self.FocusDetectionPage = FocusDetectionPage(self)  # 添加專注偵測頁面
         self.addStackedWidget_updatePageIndexMap("專注偵測", self.FocusDetectionPage)  # 將專注偵測頁面註冊到stacked_widget
-
 
 
         # 分析頁面
         self.analysis_page = AnalysisPage(self)
         self.analysis_page.back_button.clicked.connect(lambda _,Page="統計":self.showPage(Page))
         self.addStackedWidget_updatePageIndexMap("分析",self.analysis_page)
+
         #專注分析
         self.focus_analysis_page = FocusAnalysisPage(self)
         self.addStackedWidget_updatePageIndexMap("專注分析", self.focus_analysis_page)
@@ -96,17 +92,9 @@ class MainWindow(QMainWindow):
             back_btn.clicked.connect(lambda _,Page="分析":self.showPage(Page))
             self.addStackedWidget_updatePageIndexMap(subject+"分析",self.SubjectAnalysisPage_map[subject+"分析"])
 
-
-        
-        
-
-
         #初始化 {國、數、英、自、社} 解題頁面
         self.INFO_solving_page()
         
-        
-        
-
 
         # 註冊介面
         self.signup_page = QLabel(self)
@@ -176,10 +164,9 @@ class MainWindow(QMainWindow):
             btn = QPushButton(name, self.MenuPage)
             btn.clicked.connect(lambda _, Page=name: self.showPage(Page))
             self.buttons.append(btn)
- 
+            
         focus_button = QPushButton("專注偵測", self.MenuPage)
         focus_button.clicked.connect(lambda: self.showPage("專注偵測"))
-
 
         # 返回按鈕
         back_btn = QPushButton('', self.MenuPage)
@@ -218,10 +205,8 @@ class MainWindow(QMainWindow):
         
     
         #讀書會 入口
-        self.addStackedWidget_updatePageIndexMap("讀書會圖表",ClubTable(parent=self,backFunction=lambda _,Page="讀書會":self.showPage(Page)))
-        self.button_chat_ClubPage = QPushButton('讀書會圖表', self.ClubPage)
-        self.button_chat_ClubPage.clicked.connect(lambda _,Page="讀書會圖表": self.showPage(Page))
-        self.button_chat_ClubPage.setGeometry(
+        self.button_study_club_Clubpage = QPushButton('讀書會', self.ClubPage)
+        self.button_study_club_Clubpage.setGeometry(
             int(width * 0.8), int(height), int(button_width), int(button_height))
 
 
@@ -337,14 +322,13 @@ class MainWindow(QMainWindow):
 
     # 處理註冊按鈕點擊事件
     def handleSignup(self):
+        GlobalVar.msg, GlobalVar.pwd  # 告訴 Python 修改的是全局變量
         username = self.signup_username.text()
         password = self.signup_password.text()
-        msg = username
-        pwd = password
-        user= register_and_login(username, username, password)
-        if user.uID>0:
+        GlobalVar.msg = username
+        GlobalVar.pwd = password
+        if register_and_login(username, username, password):
             print(f"註冊成功！用戶名: {username}")
-            GlobalVar.uID = user.uID
             self.showPage("主菜單")
         else:
             print("註冊失敗，可能帳號已存在。")
@@ -353,37 +337,32 @@ class MainWindow(QMainWindow):
 #
     # 處理登入按鈕點擊事件
     def handleSignin(self):
+        #GlobalVar.msg, GlobalVar.pwd, GlobalVar.gpt_data  # 告訴 Python 修改的是全局變量
         account = self.signin_acount.text()
         password = self.signin_password.text()
-        msg = account
-        pwd = password
+        GlobalVar.msg = account
+        GlobalVar.pwd = password
 
     # 使用 login_check 函數來驗證用戶名和密碼
         user = login_check(account, password)
         if user.uID > 0 :
             print("登入成功！用戶名:", user.name, "用戶ID:", user.uID)
             # gpt的資料
-            GlobalVar.uID=user.uID
             GlobalVar.gpt_data = find_gpt(user.uID)
             self.showPage("主菜單")
-            
         else:
             print("登入失敗，用戶名或密碼錯誤。")
         
-    
-        
-
-
-
-
 
 #_____________________________________________________頁面切換_________________________________________________________________________
     #依據頁面名稱string，展示頁面
     def showPage(self,title:str):
         if(self.page_index_map.get(title)!=None):
             self.stacked_widget.setCurrentIndex(self.page_index_map[title])
+            if title == "專注分析" and self.focus_analysis_page is not None:
+                self.focus_analysis_page.update_focus_data()
         else:
-            print (f'頁面展示失敗title={title}')
+            print (title)
 
 
 #____________________________________________________頁面註冊__________________________________________________________________________
@@ -394,7 +373,7 @@ class MainWindow(QMainWindow):
         Index = len(self.page_index_map)  # 獲取當前索引
         self.page_index_map[name] = Index  # 更新頁面索引映射
         print(self.page_index_map)  # 輸出頁面索引映射
-        #print(self.stacked_widget.count())  # 輸出當前頁面數量
+        print(self.stacked_widget.count())  # 輸出當前頁面數量
         return Index  # 返回當前索引
 
 #__________________________________________________________________________建造解題頁面______________________________________________________________

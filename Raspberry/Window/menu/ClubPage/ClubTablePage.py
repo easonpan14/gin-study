@@ -1,6 +1,9 @@
 import sys
 from PyQt5.QtWidgets import QLabel,QGridLayout, QVBoxLayout, QWidget, QPushButton,QSpacerItem,QSizePolicy
 from PyQt5.QtCore import Qt
+
+
+
 from Window.menu.ClubPage.ClubFocusTimeChart import ClubChartPage
 from GlobalVar import GlobalVar
 from database.DateBase import get_groups_by_uid,get_Group_Name  # 假設這些函數已經定義好
