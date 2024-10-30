@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMainWindow, QStackedWidget,QLabel,QPushButton,QLineEdit,QWidget
+from PyQt5.QtWidgets import QMainWindow, QStackedWidget,QLabel,QPushButton,QLineEdit,QWidget,QMessageBox
 from PyQt5.QtGui import QPixmap
 
 
@@ -10,7 +10,7 @@ from Window.menu.StatisticsPage.AnalysisPage.AnalysisPage import AnalysisPage
 from Window.menu.EnglishPage.EnglishPage import EnglishPage
 from Window.menu.ClubPage.ClubTablePage import ClubTable
 from Window.menu.Focus.focus import FocusDetectionPage  # 導入專注偵測頁面
-from database.DateBase import register_and_login,login_check,find_gpt
+from database.DateBase import register_and_login,login_check,find_gpt,get_name_by_uid,select_family_request,agree_family_request
 from GlobalVar import GlobalVar
 from Window.menu.StatisticsPage.AnalysisPage.FocusAnalysisPage import FocusAnalysisPage
 
@@ -36,12 +36,13 @@ class MainWindow(QMainWindow):
         self.create_buttons_MainPage()                     #建構登入、註冊按鈕
 
         # 第二頁 (主菜單)------------------可用-------------------------------
-        self.MenuPage = QLabel(self)
+        self.MenuPage = MENUPAGE()
         pixmap2 = QPixmap('Window/image/2.jpg')  # 替換為你的第二張圖片
         self.MenuPage.setPixmap(pixmap2)
         self.MenuPage.setScaledContents(True)
         self.addStackedWidget_updatePageIndexMap("主菜單",self.MenuPage)
         self.create_buttons_MenuPage()
+        self.MenuPage.event
 
         # 第三頁 (解題科目菜單)---------------可用-------------------------------
         self.GPTMenuPage = CustomPage(self)
@@ -409,4 +410,22 @@ class MainWindow(QMainWindow):
         
 
 
+##同意請求補丁
+class MENUPAGE(QLabel):
+    def __init__(self,):
+        super().__init__()
+    def showEvent(self, event):
+        super().showEvent(event)  # 调用父类的 showEvent
+        requests=select_family_request(GlobalVar.uID)
+        requests=requests["received_requests"]
 
+        for parentID,chrilID in requests:
+            dialog=QMessageBox(icon=QMessageBox.Question,text=f'受否同意來自{get_name_by_uid(parentID)}(uID:{parentID})成為你父母的請求')
+            dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            
+            choice = dialog.exec()
+
+            if choice == QMessageBox.Yes:
+                agree_family_request(parentID,GlobalVar.uID,1)  # “確認”
+            else:
+                agree_family_request(parentID,GlobalVar.uID,0)  # “取消”

@@ -296,7 +296,7 @@ def send_family_request(parent_ID:int, child_ID:int):
         connection.close()
 
 #11.查詢建立關係的請求
-def select_family_request(uID:int):
+def select_family_request(uID:int)->dict[str:[int]]:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -307,7 +307,10 @@ def select_family_request(uID:int):
                 WHERE parent_ID = %s
             """
             cursor.execute(sql_parent, (uID,))
-            sent_requests = cursor.fetchall()
+            gets=cursor.fetchall()
+            sent_requests=[]
+            for get in gets:
+                sent_requests.append(get)
 
             # 查找該用戶作為孩子收到的請求
             sql_child = """
@@ -316,8 +319,10 @@ def select_family_request(uID:int):
                 WHERE child_ID = %s
             """
             cursor.execute(sql_child, (uID,))
-            received_requests = cursor.fetchall()
-
+            gets=cursor.fetchall()
+            received_requests=[]
+            for get in gets:
+                received_requests.append(get)
             return {
                 'sent_requests': sent_requests,     # 該用戶作為父母發出的請求
                 'received_requests': received_requests  # 該用戶作為孩子收到的請求
