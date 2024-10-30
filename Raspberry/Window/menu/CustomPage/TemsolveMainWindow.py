@@ -233,7 +233,7 @@ class TemsolveMainWindow(QWidget):
             elif (objects == "社會"):
                 messages = [
                     {'role': 'user', 'content': f'你是個國小和國中的社會老師，麻煩用繁體中文幫她解決問題，問題是「{question}」'}]
-            elif (objects == "心理"):
+            elif (objects == "與...聊聊"):
                 messages = [
                     {'role': 'user', 'content': f'你是個國小和國中的心理諮商老師，，會有學生來找你傾訴他的煩惱，請你給予他正確且安全的反饋和建議，請你勁量表現得像個人，可以是老師或朋友，麻煩用繁體中文，他想說的是「{question}」'}] 
             #print(messages)

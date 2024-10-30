@@ -1,6 +1,7 @@
 import pymysql
 
 
+
 ################################################    about class    ################################################
 # 數據庫連接配置
 DB_CONFIG = {
@@ -422,7 +423,7 @@ def insert_focus_time(uID: int, day: str, time: str):
         with connection.cursor() as cursor:
             # 查詢是否有相同日期和uID的記錄
             check_sql = """
-                SELECT time FROM focus_time 
+                SELECT time FROM Focus_time 
                 WHERE uID = %s AND day = %s
             """
             cursor.execute(check_sql, (uID, day))
@@ -432,7 +433,7 @@ def insert_focus_time(uID: int, day: str, time: str):
                 # 累加時間：如果有記錄，更新time字段
                 existing_time = result[0]  # 當前已有的時間
                 update_sql = """
-                    UPDATE focus_time 
+                    UPDATE Focus_time 
                     SET time = SEC_TO_TIME(TIME_TO_SEC(time) + TIME_TO_SEC(%s)) 
                     WHERE uID = %s AND day = %s
                 """
@@ -441,7 +442,7 @@ def insert_focus_time(uID: int, day: str, time: str):
             else:
                 # 插入新記錄：如果沒有相同日期和uID的記錄
                 insert_sql = """
-                    INSERT INTO focus_time (uID, day, time) VALUES (%s, %s, %s)
+                    INSERT INTO Focus_time (uID, day, time) VALUES (%s, %s, %s)
                 """
                 cursor.execute(insert_sql, (uID, day, time))
                 print("插入新記錄成功")
