@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QWidget,QLabel,QPushButton,QLineEdit
 from PyQt5.QtGui import QPixmap
 from gtts import gTTS
+from translate import Translator 
 import io
 import pygame
-
 
 class EnglishPage(QWidget):
     def __init__(self, parent=None):

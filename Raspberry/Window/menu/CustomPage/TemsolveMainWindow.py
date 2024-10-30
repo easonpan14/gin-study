@@ -2,6 +2,10 @@ from PyQt5.QtGui import QPixmap,  QPainter
 from PyQt5.QtWidgets import QLabel,QPushButton,QWidget,QVBoxLayout,QHBoxLayout,QScrollArea,QSpacerItem,QSizePolicy,QTextEdit
 from PyQt5.QtCore import Qt, QTimer
 from datetime import datetime
+import cv2 #新增
+import os
+import pytesseract #新增
+from PIL import Image #新增
 
 
 #自有
@@ -83,7 +87,40 @@ class TemsolveMainWindow(QWidget):
 
         main_layout.addLayout(input_layout)
     
+    def capture_photo(self,objects):
+        # 使用 OpenCV 啟動攝像頭
+        cap = cv2.VideoCapture(0)
+        if not cap.isOpened():
+            print("無法開啟攝像頭")
+            return
 
+        ret, frame = cap.read()
+        if ret:
+            # 將照片保存到本地
+            file_path = 'Window/menu/CustomPage/captured_image.jpg'
+            cv2.imwrite(file_path, frame)
+            
+            # 使用 Tesseract OCR 進行文字識別
+            question_text = self.extract_text_from_image(file_path)
+            self.input_field.setText(question_text)  # 將識別出的文字設置到輸入框
+            
+            self.add_message(objects)  # 傳遞給 GPT 進行解答
+
+        cap.release()
+
+    def extract_text_from_image(self, image_path):
+        # 使用 Tesseract OCR 識別文字
+        os.chdir('Window/menu/CustomPage/Tesseract-OCR/tessdata')
+        pytesseract.pytesseract.tesseract_cmd = 'Window/menu/CustomPage/Tesseract-OCR/tesseract.exe'
+        try:
+            image = Image.open('Window/menu/CustomPage/captured_image.jpg')
+            text = pytesseract.image_to_string(image, lang='chi_tra')  # 以繁體中文模式辨識
+            print(text)
+            return text
+
+        except Exception as e:
+            print(f"OCR 識別錯誤: {e}")
+            return "無法識別文字"
     def paintEvent(self, event):
         # 使用 QPainter 繪製背景圖片
         painter = QPainter(self)
@@ -130,6 +167,7 @@ class TemsolveMainWindow(QWidget):
         
         current_date = datetime.now()
         GlobalVar.gpt_id = insert_gpt(objects, current_date.strftime("%Y-%m-%d"), GlobalVar.uID)
+
         insert_gpt_message(GlobalVar.gpt_id, message, True)
         self.input_field.clear()
 
@@ -235,7 +273,7 @@ class TemsolveMainWindow(QWidget):
             elif (objects == "與...聊聊"):
                 messages = [
                     {'role': 'user', 'content': f'你是個國小和國中的心理諮商老師，，會有學生來找你傾訴他的煩惱，請你給予他正確且安全的反饋和建議，請你勁量表現得像個人，可以是老師或朋友，麻煩用繁體中文，他想說的是「{question}」'}] 
-            #print(messages)
+            print(messages)
 
             # 調用 GPT API 生成解答
             response = self.gpt_35_api_stream(messages)

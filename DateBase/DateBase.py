@@ -278,7 +278,7 @@ def send_group_message(group_ID:int, message:str, uID:int)->GroupMessage:
         connection.close()  # 關閉資料庫連接
 
 # 10.家長發送建立關係的請求 
-def send_family_request(parent_ID:id, child_ID:id):
+def send_family_request(parent_ID:int, child_ID:int):
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
