@@ -47,7 +47,7 @@ class GptMessage:
         self.message = message
         self.sender=sender
     def __str__ (self):
-        return f"Gpt(group_message_ID={self.group_message_ID},GPT_ID={self.GPT_ID},message={self.message},sender={self.sender})"
+        return f"GptMessage(group_message_ID={self.group_message_ID},GPT_ID={self.GPT_ID},message={self.message},sender={self.sender})"
 
 class FocusTime:
     def __init__(self,uID:int,day:str,time:str):
@@ -55,7 +55,7 @@ class FocusTime:
         self.day=day
         self.time=time
     def __str__ (self):
-        return f"Gpt(uID={self.uID},day={self.day},time={self.time})"
+        return f"FocusTime(uID={self.uID},day={self.day},time={self.time})"
 
 
 ################################################    about function    ################################################
