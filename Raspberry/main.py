@@ -9,5 +9,5 @@ if __name__ == '__main__':
     win = MainWindow()
     #win.show()
     win.showMaximized()  # 最大化顯示
-    print(vars(win))
+    #print(vars(win))
     sys.exit(app.exec_())

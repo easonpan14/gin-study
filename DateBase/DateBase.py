@@ -168,6 +168,17 @@ def get_messages_by_group_id(group_id:int)->list[GroupMessage]:
             return messages  # 返回對話記錄
     finally:
         connection.close()
+def get_Group_Name(Group_ID:int):
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT Group_name FROM `Group` WHERE Group_ID=%s"
+            cursor.execute(sql, (Group_ID))
+            
+            return cursor.fetchone()[0]  # 返回對話記錄
+    finally:
+        connection.close()
+
 
 # 6. 根據 uID 查找父母 uid
 def get_parents_uid_by_uid(uID:int)->list[int]:

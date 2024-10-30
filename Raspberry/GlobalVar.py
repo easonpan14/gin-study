@@ -3,8 +3,7 @@ from openai import OpenAI
 
 class GlobalVar:
     # Static variables
-    msg = ""
-    pwd = ""
+    uID = 0
     gpt_id = 0
     gpt_data = []
     client = OpenAI(

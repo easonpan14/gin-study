@@ -126,11 +126,10 @@ class TemsolveMainWindow(QWidget):
         message = self.input_field.toPlainText()
         # 把使用者輸入的問題傳進對話框
         # 這是把問的問題丟入gpt 幹您娘
-        current_user = login_check(GlobalVar.msg, GlobalVar.pwd)  # 假設這是你登入的地方
         
         
         current_date = datetime.now()
-        GlobalVar.gpt_id = insert_gpt(objects, current_date.strftime("%Y-%m-%d"), current_user.uID)
+        GlobalVar.gpt_id = insert_gpt(objects, current_date.strftime("%Y-%m-%d"), GlobalVar.uID)
         insert_gpt_message(GlobalVar.gpt_id, message, True)
         self.input_field.clear()
 
