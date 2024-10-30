@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject }} 分析</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/analysis_subject.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <ul>
+            <li><a href="{% url 'home' %}">首頁</a></li>
+            <li><a href="{% url 'login' %}">登入</a></li>
+            <li><a href="{% url 'analysis' %}">錯題本分析</a></li>
+            <li><a href="{% url 'emo' %}">孩子心理狀況</a></li>
+        </ul>
+    </nav>
+    <h1>{{ subject }} 分析</h1>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>回答</th>
+                    <th>問題</th>
+                    <th>日期</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in display_data %}
+                <tr>
+                    <td>{{ item.sender0_message }}</td>
+                    <td>{{ item.sender1_message }}</td>
+                    <td>{{ item.date_str }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

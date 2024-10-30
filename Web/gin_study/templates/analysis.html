@@ -17,7 +17,17 @@
         </ul>
     </nav>
     <div class="container">
-        <!-- 此處可根據需要添加內容 -->
+        <h1 class="title">錯題分析</h1>
+        <img src="data:image/png;base64,{{ chart_image }}" alt="錯題分析統計圖" class="centered-image">
+        
+        
+        <div class="subject-buttons">
+            <a href="{% url 'analysis_subject' '國文' %}" class="subject-btn">國文</a>
+            <a href="{% url 'analysis_subject' '英文' %}" class="subject-btn">英文</a>
+            <a href="{% url 'analysis_subject' '數學' %}" class="subject-btn active">數學</a>
+            <a href="{% url 'analysis_subject' '自然' %}" class="subject-btn">自然</a>
+            <a href="{% url 'analysis_subject' '社會' %}" class="subject-btn">社會</a>
+        </div>        
     </div>
 </body>
 </html>

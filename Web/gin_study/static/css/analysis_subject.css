@@ -1,0 +1,59 @@
+/* 導覽列樣式 */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #8CBBE1;
+    color: white;
+    padding: 15px 20px;
+    z-index: 10;
+}
+
+.navbar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.navbar li {
+    display: inline;
+    margin: 0 15px;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+.table-container {
+    width: 80%;
+    margin: auto;
+    background-color: #f0f4f8;
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 15px;
+    text-align: center;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    border-bottom: 1px solid #d0d7de;
+}
+
+th {
+    background-color: #e9eff5;
+    font-weight: bold;
+    border-bottom: 2px solid #d0d7de;
+}
+
+td {
+    background-color: #ffffff;
+}
