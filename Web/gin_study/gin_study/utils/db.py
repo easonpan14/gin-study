@@ -79,7 +79,9 @@ def get_name_by_uid(uID):
         with connection.cursor() as cursor:
             sql = "SELECT name FROM User WHERE uID = %s"
             cursor.execute(sql, (uID))
-            return cursor.fetchone()[0]  # 返回姓名
+            get=cursor.fetchone()
+            if get:
+                return get[0]
     finally:
         connection.close()
 
@@ -163,31 +165,21 @@ def get_children_uid_by_uid(uID):
         connection.close()
 
 
-# 示例使用
-if __name__ == "__main__":
-    # 測試登錄檢查
-    user = login_check('Xiao_Ming', 'whM28Krc')
-    print('Login User:', user.name,user.uID)
-
-    # 測試根據 uID 查找姓名
-    name = get_name_by_uid(1)
-    print('User Name:', name)
-
-    # 測試根據 uID 查找群組
-    groups = get_groups_by_uid(4)
-    print('User Groups:', groups)
-
-    # 測試根據 Group_ID 查找成員
-    members = get_members_by_group_id(1)
-    print('Group Members:', members)
-
-    # 測試根據 Group_ID 查找對話記錄
-    messages = get_messages_by_group_id(1)
-    print('Group Messages:', messages[0].message)
-
-    # 測試根據 uID 查找父母或小孩
-    relationships = get_parents_uid_by_uid(3)
-    print('Relationships:', relationships)
-
-    relationships = get_children_uid_by_uid(6)
-    print('Relationships:', relationships)
+# 10.家長發送建立關係的請求 
+def send_family_request(parent_ID:int, child_ID:int):
+    connection = connect_db()
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+                INSERT INTO family_request (parent_ID, child_ID)
+                VALUES (%s, %s)
+            """
+            cursor.execute(sql, (parent_ID, child_ID))
+            connection.commit()
+            print("請求已成功發送")
+    except Exception as e:
+        print(f"Error: {e}")
+        connection.rollback()
+        return -1
+    finally:
+        connection.close()

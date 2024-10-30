@@ -33,7 +33,6 @@ class MainWindow(QMainWindow):
         self.MainPage.setScaledContents(True)              #自動縮放QPixmap
         self.addStackedWidget_updatePageIndexMap("首頁",self.MainPage)#將QLabel加入stacked_widget 並註冊至self.page_index_map 以利後續查詢
         
-        self.MainPage.mousePressEvent = self.showPage("主菜單")    #設定點擊觸發事件(轉跳到stacked_widget[1]//第一頁)
         self.create_buttons_MainPage()                     #建構登入、註冊按鈕
 
         # 第二頁 (主菜單)------------------可用-------------------------------

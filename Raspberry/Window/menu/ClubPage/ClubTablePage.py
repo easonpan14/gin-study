@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt
 
 from Window.menu.ClubPage.ClubFocusTimeChart import ClubChartPage
 from GlobalVar import GlobalVar
-from database.DateBase import get_groups_by_uid,get_Group_Name  # 假設這些函數已經定義好
+from database.DateBase import get_groups_by_uid,get_Group_Name,create_group  # 假設這些函數已經定義好
 
 
 class ClubTable(QWidget):
@@ -67,4 +67,11 @@ class ClubTable(QWidget):
             button = QPushButton("顯示圖表")
             button.clicked.connect(lambda _, gid=group_id: self.show_chart(gid))
             self.table.addWidget(button,i, 1 )
+    #def new_Group(self,Name):
+        #if create_group(Name,GlobalVar.uID):
+            #
+        #else :
+
+        
+        
 

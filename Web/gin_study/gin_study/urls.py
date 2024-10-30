@@ -8,4 +8,7 @@ urlpatterns = [
     path('analysis/', views.analysis_view, name='analysis'),
     path('emo/', views.emo_view, name='emo'),
     path('analysis/<str:subject>/', views.analysis_subject, name='analysis_subject'),
+    path('add_Child/', views.add_child_view, name='add_Child'),
+
 ]
+

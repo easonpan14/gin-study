@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.http import JsonResponse
-from .utils.db import login_check, register_and_login
+from .utils.db import login_check, register_and_login, send_family_request,get_name_by_uid
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -8,10 +9,9 @@ from matplotlib import font_manager
 import pymysql
 from typing import List  # 新增這行
 from datetime import date
+plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei']  # 微軟正黑體
 
-# 字體文件的路徑
-font_path = "C:/Users/User/.conda/envs/djangoProject/Lib/site-packages/matplotlib/mpl-data/fonts/ttf/NotoSansCJKtc-Regular.otf"
-font_prop = font_manager.FontProperties(fname=font_path)
+
 account=""
 password=""
 DB_CONFIG = {
@@ -21,6 +21,7 @@ DB_CONFIG = {
     'database': 'my_database',  # 替換為你的數據庫名稱
     'charset': 'utf8mb4',
 }
+
 class User:
     def __init__(self, uID:int, name:str):
         self.uID = uID
@@ -45,6 +46,8 @@ class GptMessage:
         self.sender=sender
     def __str__ (self):
         return f"GptMessage(group_message_ID={self.group_message_ID},GPT_ID={self.GPT_ID},message={self.message},sender={self.sender})"
+    
+
 
 def connect_db():
     try:
@@ -176,9 +179,6 @@ def calculate_mistake_counts(gpt_data):
     # 將字典轉換為列表，保持科目的順序
     return [mistake_counts[subject] for subject in subjects]
 def analysis_view(request):
-    # 設置字體路徑
-    font_path = "C:/Users/User/.conda/envs/djangoProject/Lib/site-packages/matplotlib/mpl-data/fonts/ttf/NotoSansCJKtc-Regular.otf"
-    font_prop = font_manager.FontProperties(fname=font_path)
 
     # 數據
     subjects = ["Chinese", 'English', 'Math', 'Science', 'Social']
@@ -191,9 +191,9 @@ def analysis_view(request):
     # 生成圖表並應用字體
     plt.figure(figsize=(10, 5))
     plt.bar(subjects, mistake_counts, color=['#A8A8D3', '#D9B3FF', '#FFA7A7', '#FFE5B4', '#B0E0A8'])
-    plt.xlabel("科目", fontproperties=font_prop)
-    plt.ylabel("錯題數量", fontproperties=font_prop)
-    plt.title("各科錯題數統計", fontproperties=font_prop)
+    plt.xlabel("科目")
+    plt.ylabel("錯題數量")
+    plt.title("各科錯題數統計")
 
     # 將圖表轉為 Base64 編碼的圖片
     buffer = io.BytesIO()
@@ -208,3 +208,42 @@ def analysis_view(request):
 
 def emo_view(request):
     return render(request, 'emo.html')
+
+
+
+
+
+from django.shortcuts import render, redirect
+from .utils.db import login_check, send_family_request, get_name_by_uid
+
+
+from django.contrib import messages  # 导入消息框架
+
+def add_child_view(request):
+    if request.method == 'POST':
+        uID = request.POST.get('uID')
+
+        # 驗證用戶登錄
+        user = login_check(account, password)
+
+        if user and user.uID != 0:  # 檢查用戶對象和 uID
+            name = get_name_by_uid(uID)  # 獲取 UID 對應的姓名
+            print(1)
+            
+            if name:  # 如果找到了對應的名字
+                print(1)
+                r = send_family_request(user.uID, uID)  # 發送家庭請求
+                print(1)
+                if r == -1:
+                    print(1)
+                    messages.error(request, '請求發送失敗')
+                else:
+                    messages.success(request, '已成功發送請求')
+                    print(1)
+            else:
+                messages.error(request, '此 UID 不存在，請確認後再試')
+                print(1)
+        else:
+            messages.error(request, '無效的憑證')  # 如果登錄失敗，使用消息框架提供錯誤信息
+
+    return render(request, 'add_Child.html')
