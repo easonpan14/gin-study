@@ -8,6 +8,7 @@ from Window.menu.StatisticsPage.AnalysisPage.SubjectAnalysisPage import SubjectA
 from Window.menu.CustomPage.TemsolveMainWindow import TemsolveMainWindow
 from Window.menu.StatisticsPage.AnalysisPage.AnalysisPage import AnalysisPage
 from Window.menu.EnglishPage.EnglishPage import EnglishPage
+from Window.menu.ClubPage.ClubFocusTimeChartPage import ClubChartPage
 
 from database.DateBase import register_and_login,login_check,find_gpt
 from GlobalVar import GlobalVar
@@ -206,9 +207,12 @@ class MainWindow(QMainWindow):
         
     
         #讀書會 入口
-        self.button_study_club_Clubpage = QPushButton('讀書會', self.ClubPage)
-        self.button_study_club_Clubpage.setGeometry(
+        self.addStackedWidget_updatePageIndexMap("讀書會圖表",ClubChartPage(parent=self,backFunction=lambda _,Page="讀書會":self.showPage(Page)))
+        self.button_chat_ClubPage = QPushButton('讀書會圖表', self.ClubPage)
+        self.button_chat_ClubPage.clicked.connect(lambda _,Page="讀書會圖表": self.showPage(Page))
+        self.button_chat_ClubPage.setGeometry(
             int(width * 0.8), int(height), int(button_width), int(button_height))
+        
 
 
         #綁定 與...聊聊 入口
