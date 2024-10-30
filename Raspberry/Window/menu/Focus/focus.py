@@ -197,17 +197,16 @@ class FocusDetectionPage(QWidget):
             self.display_timer.stop()
             
             # 將專注時間記錄到資料庫
-            current_user = login_check(GlobalVar.msg, GlobalVar.pwd)
             current_date = datetime.now()
             focus_time = str(timedelta(seconds=self.elapsed_time))
             focus_time = focus_time.zfill(8)  # 補足到 8 位格式
             # 將專注時間插入資料庫
-            insert_focus_time(current_user.uID, current_date.strftime("%Y-%m-%d"), focus_time)
-            print(current_user.uID)
+            insert_focus_time(GlobalVar.uID, current_date.strftime("%Y-%m-%d"), focus_time)
+            print(GlobalVar.uID)
             print(current_date.strftime("%Y-%m-%d"))
             print(focus_time)
 
-            print(f"已儲存專注時間：{focus_time} 給用戶 {current_user.uID}")
+            print(f"已儲存專注時間：{focus_time} 給用戶 {GlobalVar.uID}")
 
     def update_elapsed_time(self):
         if self.is_timing:

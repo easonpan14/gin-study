@@ -1,5 +1,5 @@
 
-from PyQt5.QtWidgets import QVBoxLayout, QWidget, QPushButton
+from PyQt5.QtWidgets import QVBoxLayout, QWidget, QPushButton,QHBoxLayout
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from datetime import timedelta,datetime
@@ -44,27 +44,33 @@ class ClubChartPage(QWidget):
         # 繪製初始圖表
         self.update_data()
 
-    def add_buttons(self, layout):
+    def add_buttons(self, layout:QVBoxLayout):
+
+
+        newlayout = QHBoxLayout()
+        layout.addLayout(newlayout)
+        # 添加顯示模式按鈕
+        self.mode_button_daily = QPushButton("每日數據")
+        self.mode_button_daily.clicked.connect(lambda: self.set_display_mode('daily'))
+        newlayout.addWidget(self.mode_button_daily)
+
+        self.mode_button_cumulative = QPushButton("累積數據")
+        self.mode_button_cumulative.clicked.connect(lambda: self.set_display_mode('cumulative'))
+        newlayout.addWidget(self.mode_button_cumulative)
+
+
+        newlayout = QHBoxLayout()
+        layout.addLayout(newlayout)
         # 添加日期範圍按鈕
         range_buttons = {
             "最近7天": 7,
             "最近14天": 14,
             "最近30天": 30
         }
-
         for text, days in range_buttons.items():
             button = QPushButton(text)
             button.clicked.connect(lambda _, d=days: self.set_date_range(d))
-            layout.addWidget(button)
-
-        # 添加顯示模式按鈕
-        self.mode_button_daily = QPushButton("每日數據")
-        self.mode_button_daily.clicked.connect(lambda: self.set_display_mode('daily'))
-        layout.addWidget(self.mode_button_daily)
-
-        self.mode_button_cumulative = QPushButton("累積數據")
-        self.mode_button_cumulative.clicked.connect(lambda: self.set_display_mode('cumulative'))
-        layout.addWidget(self.mode_button_cumulative)
+            newlayout.addWidget(button)
 
     def set_date_range(self, days):
         self.date_range = days
