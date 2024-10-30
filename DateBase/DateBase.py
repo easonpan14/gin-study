@@ -17,7 +17,8 @@ class User:
     def __init__(self, uID:int, name:str):
         self.uID = uID
         self.name = name
-
+    def __str__ (self):
+        return f"User(uID={self.uID},name={self.name})"
 
 
 # 群組消息類    消息越晚,group_message_ID越大   uID為發送者 gID為群組
@@ -27,7 +28,8 @@ class GroupMessage:
         self.message = message
         self.Group_ID=Group_ID
         self.uID = uID
-
+    def __str__ (self):
+        return f"GroupMessage(group_message_ID={self.group_message_ID},message={self.message},Group_ID={self.Group_ID},uID={self.uID})"
 
 class Gpt:
     def __init__(self, Gpt_ID:int, subject:str,day:str, uID:int):
@@ -35,7 +37,8 @@ class Gpt:
         self.subject = subject
         self.day=day
         self.uID = uID
-
+    def __str__ (self):
+        return f"Gpt(Gpt_ID={self.Gpt_ID},subject={self.subject},day={self.day},uID={self.uID})"
 
 class GptMessage:
     def __init__(self, group_message_ID:int, GPT_ID:int,message:str, sender:bool):
@@ -43,12 +46,16 @@ class GptMessage:
         self.GPT_ID=GPT_ID               
         self.message = message
         self.sender=sender
+    def __str__ (self):
+        return f"Gpt(group_message_ID={self.group_message_ID},GPT_ID={self.GPT_ID},message={self.message},sender={self.sender})"
 
 class FocusTime:
     def __init__(self,uID:int,day:str,time:str):
         self.uID=uID
         self.day=day
         self.time=time
+    def __str__ (self):
+        return f"Gpt(uID={self.uID},day={self.day},time={self.time})"
 
 
 ################################################    about function    ################################################
@@ -457,7 +464,7 @@ def insert_focus_time(uID: int, day: str, time: str):
     finally:
         connection.close()
 # 17
-def find_fous_time(uID:int):
+def find_focus_time(uID:int)->list[FocusTime]:
     connection = connect_db()
     try:
         with connection.cursor() as cursor:
@@ -471,7 +478,7 @@ def find_fous_time(uID:int):
             return focus_time
     except Exception as e:
         print(f"Error: {e}")
-        return [GptMessage(-1, -1, "", 0)]  # 失败返回ID=-1
+        return [FocusTime(-1,"","")]  # 失败返回ID=-1
     finally:
         connection.close()
 
