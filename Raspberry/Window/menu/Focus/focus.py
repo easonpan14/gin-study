@@ -1,4 +1,3 @@
-# Window/menu/focus/focus.py
 import cv2
 import math
 import mediapipe as mp
@@ -7,12 +6,10 @@ from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget, QPushButton, QMessageBox, QHBoxLayout
 from datetime import datetime, timedelta
 
-#自有
-from database.DateBase import insert_focus_time,login_check
-##全域變數
+# 自有
+from database.DateBase import insert_focus_time, login_check
+# 全域變數
 from GlobalVar import GlobalVar
-
-
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(QImage)
@@ -96,32 +93,35 @@ class FocusDetectionPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("專注度監測")
-        self.resize(800, 480)
+        self.resize(1280, 720)
         self.selected_subject = None  # 儲存選擇的科目
 
         # 設定背景圖片
         self.background_label = QLabel(self)
-        self.background_pixmap = QPixmap("Window/image/怎麼不去被狗幹.jpg")
+        self.background_pixmap = QPixmap("Window/image/blue.jpg")
         self.background_label.setPixmap(self.background_pixmap)
         self.background_label.setScaledContents(True)  # 自動縮放背景圖片
-        self.background_label.setGeometry(0, 0, 800, 480)  # 設置為全屏
+        self.background_label.setGeometry(0, 0, self.width(), self.height())  # 設置為全屏
         self.background_label.lower()  # 確保背景圖片在最底層
 
         # 設置其他組件
         self.camera_label = QLabel(self)
-        self.camera_label.setFixedSize(640, 480)
+        self.camera_label.setFixedSize(800, 600)  # 加大攝像頭畫面
 
         self.concern_value_label = QLabel("專注度: 0.0", self)
+        self.concern_value_label.setStyleSheet("font-size: 30px;")  # 增加字體大小
         self.timer_label = QLabel("計時: 0 s", self)
+        self.timer_label.setStyleSheet("font-size: 30px;")  # 增加字體大小
 
+        # 設置水平的開始計時和停止計時按鈕
         self.start_button = QPushButton("開始計時", self)
-        self.start_button.setFixedSize(80, 40)
-        self.start_button.setStyleSheet("border-radius: 10px; background-color: #ADD8E6; font-size: 12px;")
+        self.start_button.setFixedSize(200, 100)  # 增大按鈕
+        self.start_button.setStyleSheet("border-radius: 10px; background-color: #ADD8E6; font-size: 30px;")
         self.start_button.clicked.connect(self.start_timer)
 
         self.stop_button = QPushButton("停止計時", self)
-        self.stop_button.setFixedSize(80, 40)
-        self.stop_button.setStyleSheet("border-radius: 10px; background-color: #FFB6C1; font-size: 12px;")
+        self.stop_button.setFixedSize(200, 100)  # 增大按鈕
+        self.stop_button.setStyleSheet("border-radius: 10px; background-color: #FFB6C1; font-size: 30px;")
         self.stop_button.clicked.connect(self.stop_timer)
 
         # 科目選擇按鈕
@@ -137,26 +137,41 @@ class FocusDetectionPage(QWidget):
             button.setFixedSize(80, 40)
             button.clicked.connect(lambda _, s=subject: self.select_subject(s))
 
-        # 布局設置
-        main_layout = QVBoxLayout()  # 主佈局
-        main_layout.addWidget(self.camera_label)
-        main_layout.addWidget(self.concern_value_label)
-        main_layout.addWidget(self.timer_label)
-        main_layout.addWidget(self.start_button, alignment=Qt.AlignCenter)
-        main_layout.addWidget(self.stop_button, alignment=Qt.AlignCenter)
+        # 主佈局
+        main_layout = QVBoxLayout()
+        
+        # 中心化攝像頭畫面
+        camera_layout = QHBoxLayout()
+        camera_layout.addStretch(1)
+        camera_layout.addWidget(self.camera_label)
+        camera_layout.addStretch(1)
+        main_layout.addLayout(camera_layout)
 
-        # 將科目按鈕佈置在右下角
+        # 專注度與計時器並列顯示
+        info_layout = QHBoxLayout()
+        info_layout.addWidget(self.concern_value_label, alignment=Qt.AlignCenter)
+        info_layout.addWidget(self.timer_label, alignment=Qt.AlignCenter)
+        main_layout.addLayout(info_layout)
+
+        # 水平佈局的開始和停止按鈕
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.start_button)
+        button_layout.addWidget(self.stop_button)
+        main_layout.addLayout(button_layout)
+
+        # 科目按鈕佈局
         subject_layout = QHBoxLayout()
         for button in self.subject_buttons.values():
             subject_layout.addWidget(button, alignment=Qt.AlignRight)
         main_layout.addLayout(subject_layout)
 
-        container_widget = QWidget(self)  # 創建一個容器部件來包含其他組件
+        # 配置主窗口
+        container_widget = QWidget(self)
         container_widget.setLayout(main_layout)
-        container_widget.setGeometry(0, 0, 800, 480)  # 設置容器的大小與背景一致
-        self.setLayout(main_layout)  # 設置主佈局
+        container_widget.setGeometry(0, 0, self.width(), self.height())
+        self.setLayout(main_layout)
 
-        # 計時與專注度
+        # 初始化計時和執行緒
         self.elapsed_time = 0
         self.is_timing = False
         self.display_timer = QTimer(self)
@@ -172,7 +187,7 @@ class FocusDetectionPage(QWidget):
 
     # 動態調整背景圖片的大小
     def resizeEvent(self, event):
-        self.background_label.setGeometry(0, 0, 800, 480)
+        self.background_label.setGeometry(0, 0, self.width(), self.height())
         super(FocusDetectionPage, self).resizeEvent(event)
 
     # 選擇科目
