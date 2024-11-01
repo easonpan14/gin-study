@@ -21,7 +21,7 @@ class SubjectAnalysisPage(QWidget):
 
         # 創建背景標籤
         self.background_label = QLabel(self)
-        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.background_label.setGeometry(0, 0, 800, 480)
         self.set_background_image(background_image_path)
 
         # 設置主佈局
@@ -96,13 +96,13 @@ class SubjectAnalysisPage(QWidget):
 
     def resizeEvent(self, event):
         # 調整背景大小以適應窗口調整
-        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.background_label.setGeometry(0, 0, 800, 480)
         self.adjust_table_size()
 
     def adjust_table_size(self):
         # 根據窗口大小自動調整表格的大小
-        width = self.width() * 0.8  # 設置表格寬度為視窗的80%
-        height = self.height() * 0.6  # 設置表格高度為視窗的60%
+        width = 800 * 0.8  # 設置表格寬度為視窗的80%
+        height = 480 * 0.6  # 設置表格高度為視窗的60%
         self.table_widget.setFixedSize(QSize(int(width), int(height)))
     def update_table(self):
         GlobalVar.gpt_data

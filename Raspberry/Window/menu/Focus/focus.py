@@ -96,7 +96,7 @@ class FocusDetectionPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("專注度監測")
-        self.resize(1280, 720)
+        self.resize(800, 480)
         self.selected_subject = None  # 儲存選擇的科目
 
         # 設定背景圖片
@@ -104,7 +104,7 @@ class FocusDetectionPage(QWidget):
         self.background_pixmap = QPixmap("Window/image/怎麼不去被狗幹.jpg")
         self.background_label.setPixmap(self.background_pixmap)
         self.background_label.setScaledContents(True)  # 自動縮放背景圖片
-        self.background_label.setGeometry(0, 0, self.width(), self.height())  # 設置為全屏
+        self.background_label.setGeometry(0, 0, 800, 480)  # 設置為全屏
         self.background_label.lower()  # 確保背景圖片在最底層
 
         # 設置其他組件
@@ -153,7 +153,7 @@ class FocusDetectionPage(QWidget):
 
         container_widget = QWidget(self)  # 創建一個容器部件來包含其他組件
         container_widget.setLayout(main_layout)
-        container_widget.setGeometry(0, 0, self.width(), self.height())  # 設置容器的大小與背景一致
+        container_widget.setGeometry(0, 0, 800, 480)  # 設置容器的大小與背景一致
         self.setLayout(main_layout)  # 設置主佈局
 
         # 計時與專注度
@@ -172,7 +172,7 @@ class FocusDetectionPage(QWidget):
 
     # 動態調整背景圖片的大小
     def resizeEvent(self, event):
-        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.background_label.setGeometry(0, 0, 800, 480)
         super(FocusDetectionPage, self).resizeEvent(event)
 
     # 選擇科目

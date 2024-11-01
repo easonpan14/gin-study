@@ -8,13 +8,13 @@ class AnalysisPage(QWidget):
         super().__init__(parent)
         self.main_window = parent  # 保存父窗口的引用
         self.setWindowTitle('Analysis Page')
-        self.setGeometry(100, 100, 1024, 768)
-        width = self.width()
-        height = self.height()
+        self.setGeometry(100, 100, 800, 480)
+        width = 800
+        height = 480
 
         # 創建背景標籤
         self.background_label = QLabel(self)
-        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.background_label.setGeometry(0, 0, 800, 480)
         self.set_background_image('Window/image/8.png')
 
         # 設置佈局來防止其他部件影響背景
@@ -70,7 +70,7 @@ class AnalysisPage(QWidget):
 
     def resizeEvent(self, event):
         # 調整背景大小以適應窗口調整
-        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.background_label.setGeometry(0, 0, 800, 480)
 
     def show_analysis_page(self, page):
         # 切換到指定的分析頁面

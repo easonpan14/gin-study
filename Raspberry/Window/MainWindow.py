@@ -92,7 +92,7 @@ class MainWindow(QMainWindow):
         for subject in subject_name:
             self.SubjectAnalysisPage_map[subject+"分析"]=SubjectAnalysisPage(subject, self)
             back_btn = QPushButton('', self.SubjectAnalysisPage_map[subject+"分析"])
-            back_btn.setGeometry(0, 0, int(self.width() * 0.06),int(self.height() * 0.074))
+            back_btn.setGeometry(0, 0, int(800 * 0.06),int(480 * 0.074))
             back_btn.clicked.connect(lambda _,Page="分析":self.showPage(Page))
             self.addStackedWidget_updatePageIndexMap(subject+"分析",self.SubjectAnalysisPage_map[subject+"分析"])
 
@@ -125,8 +125,8 @@ class MainWindow(QMainWindow):
 
     # 創建按鈕 (第一頁)
     def create_buttons_MainPage(self): 
-        width = self.width()
-        height = self.height()
+        width = 800
+        height = 480
     
         # 設定按鈕大小
         button_width = int(width * 0.39)
@@ -183,8 +183,8 @@ class MainWindow(QMainWindow):
 
         # 返回按鈕
         back_btn = QPushButton('', self.MenuPage)
-        back_btn.setGeometry(0, 0, int(self.width() * 0.06),
-                             int(self.height() * 0.074))
+        back_btn.setGeometry(0, 0, int(800 * 0.06),
+                             int(480 * 0.074))
         back_btn.clicked.connect(lambda _,Page="首頁":self.showPage(Page))
 
 
@@ -192,8 +192,8 @@ class MainWindow(QMainWindow):
         QMainWindow.resizeEvent(self, event)
 
         # 調整第二頁按鈕
-        width = self.width()
-        height = self.height()
+        width = 800
+        height = 480
         button_width = width * 0.2
         button_height = height * 0.2
         button_positions = [(width * 0.13, height * 0.25), (width * 0.4, height * 0.25), (width * 0.67, height * 0.25),
@@ -206,8 +206,8 @@ class MainWindow(QMainWindow):
 
     # 創建按鈕 (第四頁)
     def create_buttons_ClubPage(self):
-        width = self.width()
-        height = self.height()
+        width = 800
+        height = 480
         button_width = width * 0.6
         button_height = height * 0.5
 
@@ -246,16 +246,22 @@ class MainWindow(QMainWindow):
 
     # 創建按鈕 (第六頁)
     def create_buttons_StatisticsPage(self):
-        width = self.width()
-        height = self.height()
+        width = 800
+        height = 480
         button_width = width * 0.6
-        button_height = height * 0.5
+        button_height = height * 0.4
 
 
         self.button_focus_analysis = QPushButton('專注分析', self.StatisticsPage)
         self.button_focus_analysis.setGeometry(
-            int(width * 0.8), int(height), int(button_width), int(button_height)
+            int(width *0.25), int(height *0.97), int(button_width), int(button_height)
         )
+        print("/n/n/n/n/n/n/n/n/n")
+        print(button_height)
+        print(button_width)
+        print("/n/n/n/n/n/n/n/n/n")
+
+
         
         # 設置專注分析按鈕的點擊事件，切換到目標頁面
         self.button_focus_analysis.clicked.connect(lambda: self.showPage("專注分析"))
@@ -263,7 +269,7 @@ class MainWindow(QMainWindow):
         
         self.button_chat_StatisticsPage = QPushButton('分析', self.StatisticsPage)
         self.button_chat_StatisticsPage.setGeometry(
-            int(width*2 ), int(height ), int(button_width), int(button_height))
+            int(width*1.2 ), int(height*0.98 ), int(button_width), int(button_height))
         self.button_chat_StatisticsPage.clicked.connect(lambda _,Page="分析":self.showPage(Page))  # 設置點擊事件
 
         

@@ -12,12 +12,12 @@ class EnglishPage(QWidget):
         # 設定佈局
         self.setWindowTitle('English Practice')
         self.setGeometry(100, 100, 1024, 768)
-        width = self.width()
-        height = self.height()
+        width = 800
+        height = 480
 
         # 加載背景圖片
         self.background_label = QLabel(self)
-        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.background_label.setGeometry(0, 0, 800, 480)
         self.set_background_image('Window/image/5.jpg')
 
         # 創建輸入框
@@ -70,8 +70,8 @@ class EnglishPage(QWidget):
 
     def resizeEvent(self, event):
         # 在窗口調整大小時，重新調整背景圖片大小
-        width = self.width()
-        height = self.height()
+        width = 800
+        height = 480
         self.background_label.setGeometry(0, 0, width, height)
         self.input_field.setGeometry(int(
             width*0.078125), int(height*0.282542), int(width*0.3125), int(height*0.2018163))

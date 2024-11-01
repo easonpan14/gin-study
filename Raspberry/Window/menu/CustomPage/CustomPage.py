@@ -8,11 +8,11 @@ class CustomPage(QWidget):
         self.setWindowTitle('Solving Interface')
         self.setGeometry(100, 100, 1024, 768)
 
-        width = self.width()
-        height = self.height()
+        width = 800
+        height = 480
         # 創建背景標籤
         self.background_label = QLabel(self)
-        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.background_label.setGeometry(0, 0, width, height)
 
         # 呼叫設定背景圖片函數
         self.set_background_image('Window/image/3.jpg')
@@ -38,10 +38,10 @@ class CustomPage(QWidget):
 
     def resizeEvent(self, event):
         # 重新設定背景圖片大小
-        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.background_label.setGeometry(0, 0, 800, 480)
 
-        width = self.width()
-        height = self.height()
+        width = 800
+        height = 480
         button_width = int(width * 0.15)
         button_height = int(height * 0.25)
 

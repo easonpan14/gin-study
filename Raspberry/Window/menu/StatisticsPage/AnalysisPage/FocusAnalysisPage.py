@@ -49,7 +49,7 @@ class FocusAnalysisPage(QWidget):
 
     def resizeEvent(self, event):
         # 調整背景大小以適應窗口調整
-        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        self.background_label.setGeometry(0, 0, 800, 480)
         super().resizeEvent(event)
 
     def update_focus_data(self):
