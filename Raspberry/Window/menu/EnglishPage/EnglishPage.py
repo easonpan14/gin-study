@@ -11,7 +11,7 @@ class EnglishPage(QWidget):
 
         # 設定佈局
         self.setWindowTitle('English Practice')
-        self.setGeometry(100, 100, 1024, 768)
+        self.setGeometry(100, 100, 800, 480)
         width = 800
         height = 480
 
@@ -40,9 +40,9 @@ class EnglishPage(QWidget):
         self.play_button.clicked.connect(self.play_audio)
 
         # 創建翻譯按鈕
-        self.translate_button = QPushButton('翻譯成中文', self)
+        self.translate_button = QPushButton('翻譯', self)
         self.translate_button.setGeometry(
-            int(width*0.423), int(height*0.776084), int(width*0.1), int(height*0.05))
+            int(width*0.0423), int(height*0.776084), int(width*0.05), int(height*0.025))
         self.translate_button.clicked.connect(self.translate_text)
 
         # 顯示翻譯結果的標籤
@@ -57,7 +57,7 @@ class EnglishPage(QWidget):
         # 創建返回按鈕
         self.back_button = QPushButton('', self)
         self.back_button.setGeometry(
-            0, 0, int(width*0.0625), int(height*0.0807265))
+            0, 0, int(width*0.06), int(height*0.0807265))
 
     def set_background_image(self, image_path):
         # 加載圖片並設置為背景
@@ -76,13 +76,13 @@ class EnglishPage(QWidget):
         self.input_field.setGeometry(int(
             width*0.078125), int(height*0.282542), int(width*0.3125), int(height*0.2018163))
         self.play_button.setGeometry(int(
-            width*0.423), int(height*0.676084), int(width*0.041666), int(height*0.0807265))
+            width*0.423 -8), int(height*0.676084 - 2.5), 45, 40)
         self.translate_button.setGeometry(
-            int(width*0.375), int(height*0.676084), 80, 80)
+            int(width*0.423 - 75), int(height*0.676084 -2.5), 60, 40)
         self.back_button.setGeometry(
-            0, 0, int(width*0.0625), int(height*0.0807265))
+            0, 0, int(width*0.055), int(height*0.0807265))
         self.translation_label.setGeometry(
-            1080, 350, int(width*0.1), int(height*0.05))
+            int(width*0.53), int(height*0.35), int(width*0.1), int(height*0.05))
 
     def play_audio(self):
         # 撥放音頻的功能

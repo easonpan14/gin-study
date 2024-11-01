@@ -202,6 +202,8 @@ class MainWindow(QMainWindow):
         for i, btn in enumerate(self.buttons):
             btn.setGeometry(int(button_positions[i][0]), int(
                 button_positions[i][1]), int(button_width), int(button_height))
+            
+            
 
 
     # 創建按鈕 (第四頁)

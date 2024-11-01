@@ -22,7 +22,9 @@ class TemsolveMainWindow(QWidget):
         # 設定主視窗
         self.setWindowTitle("Chat Window Example")
         self.setAttribute(Qt.WA_TranslucentBackground, True)  # 設置整體透明
-        self.showFullScreen()  # 設置為全螢幕
+        #self.showFullScreen()  # 設置為全螢幕
+        self.resize(800, 480)  # 設定視窗大小為 800x600
+
         # 設定背景圖片
         if (objects == "國文"):
             self.background_image_path = 'Window/image/chinese.jpg'
@@ -157,6 +159,8 @@ class TemsolveMainWindow(QWidget):
         self.input_field.setFixedHeight(
             min(document_height + 10, 100))  # 調整最大高度到 150
         # 確保文字可以換行顯示
+    
+
 
     def add_message(self, objects):
         # 取得輸入的文字並清空輸入框
