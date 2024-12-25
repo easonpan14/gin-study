@@ -33,6 +33,8 @@
 
 # 相關 function
 
+User
+-
 * 登入和註冊接回傳 class User uID==0表示失敗
 ```
 login_check(account, password)
@@ -46,6 +48,8 @@ return string
 get_name_by_uid(uID)
 ```
 
+family
+---
 * 根據 uID 查找父母,子女 uid
 
 return list about uID
@@ -67,8 +71,55 @@ select_family_request(uID)
 agree_family_request(parent_uID, child_uID, agree):
 ```
 
+GPT
+---
+
+* 新增GPT問題 day格式:"yyyy-mm-dd"
+
+return gpt_ID
+```
+insert_gpt(subject, day, uID)
+```
+
+* 找出使用者的所有 
+
+return GPT_ID in list
+```
+find_gpt(uID)
+```
+
+* 新增GTP訊息 send==1 user to gpt ,send==0 gpt to user
+```
+insert_gpt_message(gpt_id, message, sender)
+```
+
+* 找GPT_ID内的消息
+
+return list[class GPTMessage]
+```
+find_gpt_message(GPT_ID)
+```
 
 
+
+
+
+FouseTime
+---
+
+* 插入FouseTime 
+```
+insert_focus_time(uID, day, time)
+```
+* 根據找uID查找每日注意力時間
+
+return list[FocusTime]
+```
+find_focus_time(uID)
+```
+
+Group
+---
 
 
 * 建立群組 會回傳新群組的 group_ID
@@ -109,102 +160,3 @@ return list about class message
 ```
 get_messages_by_group_id(group_id)
 ```
-
-
-
-
-# 詳細結構
-## 使用者相關 Tables
-### User
-
-| uID | name   |   account     | password    |
-|:---:|:------:|:-------------:|:-----------:|
-| 0   | 小明   |  Xiao_Ming    |   whM28Krc  |
-| 1   | 小王   |  Xiao_Wang    |   3b9wN3T9  |
-| 2   | 小美   |  Xiao_Mei     |  N5nZcSqZ   |
-| 3   | 明父   |  Ming_Father  |   2BhPDT2p  |
-| 4   | 王父   |  Prince_Father|  PHH4WhQ8   |
-| 5   | 美父   |  Meifu_Father |   KUQDwArp  |
-| 6   | 明母   |  Ming_Mother  |   85b576Fk  |
-| 7   | 王母   |  Queen_Mother |   Q2pxD3E2  |
-| 8   | 美母   |  Mei_Mothe    |  9RY7kBy4   |
-| 9   | 老師A  |  Teacher_A    |  E3r3Cd85   |
-
-### Parent_Child_Relation
-
-
-
-| Parent_uID  | Child_uID |
-| :-----:|:-----:|
-| 3      | 0     |
-| 6      | 0     |
-| 4      | 1     |
-| 7      | 1     |
-| 5      | 2     |
-| 8      | 2     |
-
-## 群組相關 Tables
-
-### Group
-| Group_ID  | Group_name |
-| :-----:|:-----:|
-| 0      | 家長群     |
-| 1      | 學生群     |
-| 2      | 相親相愛一家     |
-
-### Group_Relation
-| Group_ID  | uID |
-| :-----:|:-----:|
-| 0      | 9     |
-| 0      | 3     |
-| 0      | 4     |
-| 0      | 5     |
-| 0      | 6     |
-| 0      | 7     |
-| 0      | 8     |
-| 1      | 0     |
-| 1      | 1     |
-| 1      | 2     |
-| 2      | 0     |
-| 2      | 3     |
-| 2      | 6     |
-
-### Group_message
-| Group_Message_ID | Message   | Group_ID|uID |
-| :-----:|:-----:|:---:|:---: |
-| 0      | 親師座談日通知     |  0   |    9 |
-| 1      | 數學考試通知     |   1  |  1   |
-| 2      | @明父明天記得參加親師座談     |   2  |  6   |
-
-
-## GPT Tabel
-### GPT
-| GPT_ID   |suject|day| uID|
-| :-----:|:----:|:------:|:------|
-| 1      |   國文 |"2024-10-23"|   1    |
-| 2      |    數學 | "2024-10-23"|    2   |
-| 3      |     英文 |"2024-10-23" |    3   |
-| 4      |   國文 | "2024-10-24" | 1    |
-
-### GPT_MESSAGE
-| GPT_MESSAGE_ID  | GPT_ID | message | sender (sender=0 gpt 傳給 user,否則表示 user 傳給 gpt) |
-| :-----:|:-----:|:-----:|:-----:|
-| 1      | 1     |赤壁賦的作者是誰|1|
-| 2      | 1     | 蘇軾|0|
-| 3      | 2     |1+1=?|1|
-| 4      | 2     |2|0|
-| 5      | 3    |HI|1|
-| 6      | 3     |你好！有什么我能帮忙的吗？😊|0|
-| 7      | 4    |  幫我找錯字  1.機器一按裝好，馬上就可以開工了。|1|
-| 8      | 4     |按裝->安裝|0|
-
-## 專注相關資料
-### focus_time
-|focus_time_ID|uID|day|time|
-|:----:|:---:|:---:|:---:|
-|1|1|"2024-10-23"|2:01:25|
-|2|3|"2024-10-23"|2:05:19|
-|3|2|"2024-10-23"|3:52:09|
-|4|2|"2024-10-24"|1:48:08|
-
-
