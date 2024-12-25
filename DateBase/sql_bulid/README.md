@@ -205,3 +205,151 @@ CREATE TABLE `Group_message` (
 | 0      | 親師座談日通知     |  0   |    9 |
 | 1      | 數學考試通知     |   1  |  1   |
 | 2      | @明父明天記得參加親師座談     |   2  |  6   |
+
+
+# 相關 function 的實際SQL語句
+
+User
+-
+* login_check(account, password)
+```
+SELECT uID, name FROM User WHERE account = {account} AND password = {password}
+```
+* register_and_login(name, account, password)
+```
+//檢查帳號是否存在
+SELECT uID FROM User WHERE account = {account}
+//不存在則加入該筆資料
+INSERT INTO User (name, account, password) VALUES ({name}, {account}, {password})
+```
+
+* get_name_by_uid(uID)
+```
+SELECT name FROM User WHERE uID = {uID}
+```
+
+family
+---
+* get_parents_uid_by_uid(uID)
+
+```
+SELECT Parent_uID FROM ParentChild WHERE Child_uID = {uID}
+```
+
+* get_children_uid_by_uid(uID)
+```
+SELECT Child_uID FROM ParentChild WHERE Parent_uID = {uID}
+```
+* send_family_request(parent_ID, child_ID) 
+```
+INSERT INTO family_request (parent_ID, child_ID) VALUES ({parent_ID}, {child_ID})
+```
+* select_family_request(uID)
+```
+SELECT parent_ID, child_ID 
+    FROM family_request 
+    WHERE parent_ID = {uID};
+
+SELECT parent_ID, child_ID 
+    FROM family_request 
+    WHERE child_ID = {uID};
+```
+
+* agree_family_request(parent_uID, child_uID, agree)
+```
+//如果同意
+INSERT INTO ParentChild (Parent_uID, Child_uID) VALUES ({parent_ID}, {child_ID})
+//不論是否同意
+DELETE FROM family_request 
+WHERE parent_ID = {parent_ID} AND child_ID = {child_ID}
+```
+
+GPT
+---
+
+* insert_gpt(subject, day, uID)
+```
+INSERT INTO GPT (subject, day, uID) VALUES ({subject}, {day}, {uID})
+```
+
+* find_gpt(uID)
+```
+SELECT GPT_ID, subject, day, uID FROM GPT WHERE uID={uID}
+```
+
+* insert_gpt_message(gpt_id, message, sender)
+```
+INSERT INTO GPT_MESSAGE (GPT_ID, message, sender) VALUES ({gpt_id}, {message}, {sender})
+```
+
+* find_gpt_message(GPT_ID)
+```
+SELECT * FROM GPT_MESSAGE WHERE GPT_ID={GPT_ID}
+```
+
+
+
+
+
+FouseTime
+---
+
+* insert_focus_time(uID, day, time)
+```
+//檢測是否已有資料
+SELECT time FROM Focus_time 
+    WHERE uID = {uID} AND day = {day}
+    
+//如果舊有資料存在，更新該筆資料
+UPDATE Focus_time 
+                    SET time = SEC_TO_TIME(TIME_TO_SEC(time) + TIME_TO_SEC({time})) 
+                    WHERE uID = {uID} AND day = {day}
+         
+//諾不存在舊有資料，新增該筆資料    
+INSERT INTO Focus_time (uID, day, time) VALUES ({uID}, {day}, {time}})
+                
+```
+* find_focus_time(uID)
+```
+SELECT uID,day,time FROM Focus_time WHERE uID={uID}
+```
+
+Group
+---
+
+
+* create_group(group_name, uID)
+```
+INSERT INTO `Group` (Group_name) VALUES ({group_name})
+INSERT INTO Group_Relation (Group_ID, uID) VALUES ({group_ID}, {uID})
+```
+
+
+* join_group(group_ID,uID)
+```
+INSERT INTO Group_Relation (Group_ID, uID) VALUES ({group_ID}, {uID})
+```
+
+* send_group_message(group_ID, message, uID)
+```
+INSERT INTO Group_message (Message, Group_ID, uID) VALUES ({group_ID}, {message}, {uID})
+```
+
+* 根據 uID 查找群組
+
+return list about groupID
+```
+get_groups_by_uid({uID}})
+```
+
+
+
+* get_members_by_group_id(group_id)
+```
+SELECT uID FROM Group_Relation WHERE Group_ID = {group_id}
+```
+
+* get_messages_by_group_id(group_id)
+```
+SELECT Group_Message_ID,Message,Group_ID,uID FROM Group_message WHERE Group_ID = {group_id}
+```
